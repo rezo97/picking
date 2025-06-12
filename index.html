@@ -6,43 +6,355 @@
     <title>შეკვეთების მართვის სისტემა</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
-        /* აქ მომხმარებლის მიერ წარსული სტილი დარჩენა */
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f8fafc; color: #334155; }
-        .container { max-width: 1400px; margin:0 auto; padding:20px; }
-        .header { background:white; padding:20px; border-radius:12px; box-shadow:0 1px 3px rgba(0,0,0,0.1); margin-bottom:20px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:15px; }
-        .logo { cursor:pointer; display:flex; align-items:center; }
-        .logo img { height:40px; margin-right:10px; }
-        .upload-section { display:flex; gap:15px; align-items:center; flex-wrap:wrap; }
-        .file-input-wrapper { position:relative; overflow:hidden; display:inline-block; }
-        .file-input { display:none; }
-        .file-input-label { background:#3b82f6; color:white; padding:10px 20px; border-radius:8px; cursor:pointer; transition:0.2s; font-weight:500; }
-        .file-input-label:hover { background:#2563eb; }
-        .view-toggle { display:flex; gap:10px; margin-bottom:20px; }
-        .view-btn { background:white; border:2px solid #e5e7eb; padding:10px 20px; border-radius:8px; cursor:pointer; font-weight:500; transition:0.2s; }
-        .view-btn.active { background:#3b82f6; color:white; border-color:#3b82f6; }
-        .view-btn:hover:not(.active) { border-color:#3b82f6; color:#3b82f6; }
-        .filters, .table-container, .stat-card { ... /* სხვა სტილი უცვლელია */ }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8fafc;
+            color: #334155;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .header h1 {
+            color: #1e293b;
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .upload-section {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .file-input-label {
+            background: #3b82f6;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            font-weight: 500;
+        }
+
+        .file-input-label:hover {
+            background: #2563eb;
+        }
+
+        .view-toggle {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .view-btn {
+            background: white;
+            border: 2px solid #e5e7eb;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .view-btn.active {
+            background: #3b82f6;
+            color: white;
+            border-color: #3b82f6;
+        }
+
+        .view-btn:hover:not(.active) {
+            border-color: #3b82f6;
+            color: #3b82f6;
+        }
+
+        .filters {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .filters h3 {
+            margin-bottom: 15px;
+            color: #1e293b;
+            font-size: 18px;
+        }
+
+        .filter-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .filter-group label {
+            font-weight: 500;
+            margin-bottom: 5px;
+            color: #4b5563;
+        }
+
+        .filter-group input, .filter-group select {
+            padding: 8px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .clear-filters {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .clear-filters:hover {
+            background: #dc2626;
+        }
+
+        .table-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        th {
+            background: #f8fafc;
+            font-weight: 600;
+            color: #374151;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        tbody tr:hover {
+            background: #f9fafb;
+        }
+
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .status-collect {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-collected {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-badge:hover {
+            transform: scale(1.05);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6b7280;
+        }
+
+        .empty-state h3 {
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .stat-card h4 {
+            color: #6b7280;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+        .stat-card .number {
+            font-size: 24px;
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .date-column {
+            font-size: 12px;
+            color: #6b7280;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .filter-row {
+                grid-template-columns: 1fr;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <div class="logo" onclick="location.reload()">
-                <img src="https://your-cdn.com/dressup-logo.png" alt="Dressup Logo">
-                <h1>Dressup შეკვეთების სისტემა</h1>
-            </div>
+            <h1>შეკვეთების მართვის სისტემა</h1>
             <div class="upload-section">
                 <div class="file-input-wrapper">
                     <input type="file" id="fileInput" class="file-input" accept=".xlsx,.xls" />
                     <label for="fileInput" class="file-input-label">Excel ფაილის ატვირთვა</label>
                 </div>
-                <span id="fileName" style="color:#6b7280;"></span>
+                <span id="fileName" style="color: #6b7280;"></span>
             </div>
         </div>
 
-        <!-- view-ს, stats, filters, table ნაწილი უცვლელია -->
+        <div class="view-toggle">
+            <button class="view-btn active" onclick="switchView('dashboard')">დეშბორდი</button>
+            <button class="view-btn" onclick="switchView('history')">ისტორია</button>
+        </div>
 
+        <div class="stats">
+            <div class="stat-card">
+                <h4>სულ შეკვეთები</h4>
+                <div class="number" id="totalOrders">0</div>
+            </div>
+            <div class="stat-card">
+                <h4>ასაგროვებელი</h4>
+                <div class="number" id="toCollectOrders">0</div>
+            </div>
+            <div class="stat-card">
+                <h4>აგროვებული</h4>
+                <div class="number" id="collectedOrders">0</div>
+            </div>
+        </div>
+
+        <div class="filters">
+            <h3>ფილტრები</h3>
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label>შეკვეთა</label>
+                    <input type="text" id="filterOrder" placeholder="ძებნა შეკვეთის მიხედვით">
+                </div>
+                <div class="filter-group">
+                    <label>მიმღები</label>
+                    <input type="text" id="filterReceiver" placeholder="ძებნა მიმღების მიხედვით">
+                </div>
+                <div class="filter-group">
+                    <label>კურიერი</label>
+                    <select id="filterCourier">
+                        <option value="">ყველა კურიერი</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>სტატუსი</label>
+                    <select id="filterStatus">
+                        <option value="">ყველა სტატუსი</option>
+                        <option value="ასაგროვებელი">ასაგროვებელი</option>
+                        <option value="აგროვებული">აგროვებული</option>
+                    </select>
+                </div>
+            </div>
+            <button class="clear-filters" onclick="clearAllFilters()">ფილტრების გასუფთავება</button>
+        </div>
+
+        <div class="table-container">
+            <div class="table-wrapper">
+                <table id="dataTable">
+                    <thead>
+                        <tr id="tableHeader">
+                            <th>შეკვეთა</th>
+                            <th>მიმღები</th>
+                            <th>კურიერი</th>
+                            <th>ტემპი</th>
+                            <th>სტატუსი</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        <tr>
+                            <td colspan="5" class="empty-state">
+                                <h3>მონაცემები ჯერ არ არის ატვირთული</h3>
+                                <p>Excel ფაილის ატვირთვისთვის გამოიყენეთ ზედა ღილაკი</p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -50,95 +362,127 @@
         let filteredData = [];
         let currentView = 'dashboard';
 
-        const STORAGE_KEY = 'dressup_orders';
-
-        // Page init
-        window.addEventListener('DOMContentLoaded', () => {
-            const stored = localStorage.getItem(STORAGE_KEY);
-            if (stored) {
-                data = JSON.parse(stored);
-                populateCourierFilter();
-                applyFilters();
-                updateStats();
-                document.getElementById('fileName').textContent = '— ადგილობრივი მონაცემები —';
-            }
-        });
-
-        // Upload input
-        document.getElementById('fileInput').addEventListener('change', e => {
+        // Excel ფაილის ატვირთვა
+        document.getElementById('fileInput').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (!file) return;
+
             document.getElementById('fileName').textContent = file.name;
+
             const reader = new FileReader();
-            reader.onload = ev => {
-                const wb = XLSX.read(ev.target.result, { type: 'binary' });
-                const ws = wb.Sheets[wb.SheetNames[0]];
-                const json = XLSX.utils.sheet_to_json(ws);
-                data = json.map((row, idx) => ({
-                    id: idx,
-                    order: row['შეკვეთა'] || row['Order'] || '',
-                    receiver: row['მიმღები'] || row['Receiver'] || '',
-                    courier: row['კურიერი'] || row['Courier'] || '',
-                    type: row['ტემპი'] || row['Type'] || '',
-                    status: 'ასაგროვებელი',
-                    statusChangedDate: null
-                }));
-                saveData();
-                populateCourierFilter();
-                applyFilters();
-                updateStats();
+            reader.onload = function(e) {
+                const workbook = XLSX.read(e.target.result, { type: 'binary' });
+                const sheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[sheetName];
+                const jsonData = XLSX.utils.sheet_to_json(worksheet);
+                
+                processData(jsonData);
             };
             reader.readAsBinaryString(file);
         });
 
-        function saveData() {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        function processData(jsonData) {
+            data = jsonData.map((row, index) => ({
+                id: index,
+                order: row['შეკვეთა'] || row['Order'] || '',
+                receiver: row['მიმღები'] || row['Receiver'] || '',
+                courier: row['კურიერი'] || row['Courier'] || '',
+                type: row['ტემპი'] || row['Type'] || '',
+                status: 'ასაგროვებელი', // default status
+                statusChangedDate: null
+            }));
+
+            // კურიერების სია ფილტრისთვის
+            populateCourierFilter();
+            applyFilters();
+            updateStats();
         }
 
         function populateCourierFilter() {
-            const couriers = [...new Set(data.map(d => d.courier))].filter(Boolean).sort();
-            const sel = document.getElementById('filterCourier');
-            sel.innerHTML = '<option value="">ყველა კურიერი</option>';
-            couriers.forEach(c => {
-                const o = document.createElement('option');
-                o.value = c; o.textContent = c;
-                sel.appendChild(o);
+            const couriers = [...new Set(data.map(item => item.courier))].filter(Boolean).sort();
+            const courierSelect = document.getElementById('filterCourier');
+            courierSelect.innerHTML = '<option value="">ყველა კურიერი</option>';
+            couriers.forEach(courier => {
+                const option = document.createElement('option');
+                option.value = courier;
+                option.textContent = courier;
+                courierSelect.appendChild(option);
             });
         }
 
         function renderTable() {
             const tbody = document.getElementById('tableBody');
             const header = document.getElementById('tableHeader');
+            
+            // Update table header based on current view
             if (currentView === 'history') {
-                header.innerHTML = `<th>შეკვეთა</th><th>მიმღები</th><th>კურიერი</th><th>ტემპი</th><th>სტატუსი</th><th>შეცვლის თარიღი</th>`;
+                header.innerHTML = `
+                    <th>შეკვეთა</th>
+                    <th>მიმღები</th>
+                    <th>კურიერი</th>
+                    <th>ტემპი</th>
+                    <th>სტატუსი</th>
+                    <th>შეცვლის თარიღი</th>
+                `;
             } else {
-                header.innerHTML = `<th>შეკვეთა</th><th>მიმღები</th><th>კურიერი</th><th>ტემპი</th><th>სტატუსი</th>`;
+                header.innerHTML = `
+                    <th>შეკვეთა</th>
+                    <th>მიმღები</th>
+                    <th>კურიერი</th>
+                    <th>ტემპი</th>
+                    <th>სტატუსი</th>
+                `;
             }
+            
             if (filteredData.length === 0) {
-                const colspan = currentView === 'history' ? 6 : 5;
-                tbody.innerHTML = `<tr><td colspan="${colspan}" class="empty-state"><h3>მონაცემები არ მოიძებნა</h3><p>სცადეთ ფილტრების შეცვლა</p></td></tr>`;
+                const colspan = currentView === 'history' ? '6' : '5';
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="${colspan}" class="empty-state">
+                            <h3>მონაცემები არ მოიძებნა</h3>
+                            <p>სცადეთ ფილტრების შეცვლა</p>
+                        </td>
+                    </tr>
+                `;
                 return;
             }
+
             tbody.innerHTML = filteredData.map(item => {
-                const cls = item.status === 'აგროვებული' ? 'status-collected' : 'status-collect';
-                const dateCol = currentView === 'history'
-                    ? `<td class="date-column">${item.statusChangedDate || '-'}</td>`
-                    : '';
-                const badge = `<span class="status-badge ${cls}" onclick="${currentView==='dashboard' ? `toggleStatus(${item.id})` : ''}">${item.status}</span>`;
-                return `<tr><td>${item.order}</td><td>${item.receiver}</td><td>${item.courier}</td><td>${item.type}</td><td>${badge}</td>${dateCol}</tr>`;
+                const statusClass = item.status === 'აგროვებული' ? 'status-collected' : 'status-collect';
+                const dateColumn = currentView === 'history' && item.statusChangedDate 
+                    ? `<td class="date-column">${item.statusChangedDate}</td>` 
+                    : currentView === 'history' ? '<td class="date-column">-</td>' : '';
+                
+                const statusCell = currentView === 'dashboard' 
+                    ? `<span class="status-badge ${statusClass}" onclick="toggleStatus(${item.id})">${item.status}</span>`
+                    : `<span class="status-badge ${statusClass}">${item.status}</span>`;
+
+                return `
+                    <tr>
+                        <td>${item.order}</td>
+                        <td>${item.receiver}</td>
+                        <td>${item.courier}</td>
+                        <td>${item.type}</td>
+                        <td>${statusCell}</td>
+                        ${dateColumn}
+                    </tr>
+                `;
             }).join('');
         }
 
         function toggleStatus(id) {
-            const item = data.find(d=>d.id===id);
-            if (item && currentView==='dashboard') {
-                const old = item.status;
-                item.status = old==='ასაგროვებელი'?'აგროვებული':'ასაგროვებელი';
-                if (old !== item.status) {
+            const item = data.find(d => d.id === id);
+            if (item && currentView === 'dashboard') {
+                const oldStatus = item.status;
+                item.status = item.status === 'ასაგროვებელი' ? 'აგროვებული' : 'ასაგროვებელი';
+                
+                // Set status change date
+                if (oldStatus !== item.status) {
                     const now = new Date();
-                    item.statusChangedDate = now.toLocaleDateString('ka-GE')+' '+now.toLocaleTimeString('ka-GE',{hour:'2-digit',minute:'2-digit'});
+                    item.statusChangedDate = now.toLocaleDateString('ka-GE') + ' ' + 
+                                           now.toLocaleTimeString('ka-GE', { hour: '2-digit', minute: '2-digit' });
                 }
-                saveData();
+                
                 applyFilters();
                 updateStats();
             }
@@ -146,40 +490,62 @@
 
         function switchView(view) {
             currentView = view;
-            document.querySelectorAll('.view-btn').forEach(b=>b.classList.remove('active'));
+            
+            // Update button states
+            document.querySelectorAll('.view-btn').forEach(btn => btn.classList.remove('active'));
             event.target.classList.add('active');
+            
             applyFilters();
         }
 
         function updateStats() {
-            document.getElementById('totalOrders').textContent = data.length;
-            document.getElementById('toCollectOrders').textContent = data.filter(d=>d.status==='ასაგროვებელი').length;
-            document.getElementById('collectedOrders').textContent = data.filter(d=>d.status==='აგროვებული').length;
+            const total = data.length;
+            const toCollect = data.filter(item => item.status === 'ასაგროვებელი').length;
+            const collected = data.filter(item => item.status === 'აგროვებული').length;
+
+            document.getElementById('totalOrders').textContent = total;
+            document.getElementById('toCollectOrders').textContent = toCollect;
+            document.getElementById('collectedOrders').textContent = collected;
         }
 
         function applyFilters() {
-            const of = document.getElementById('filterOrder').value.toLowerCase().trim();
-            const rf = document.getElementById('filterReceiver').value.toLowerCase().trim();
-            const cf = document.getElementById('filterCourier').value;
-            const sf = document.getElementById('filterStatus').value;
-            let arr = [...data];
-            if (currentView==='dashboard') arr = arr.filter(d=>d.status==='ასაგროვებელი');
-            filteredData = arr.filter(d => 
-                (!of || d.order.toLowerCase().includes(of)) &&
-                (!rf || d.receiver.toLowerCase().includes(rf)) &&
-                (!cf || d.courier === cf) &&
-                (!sf || d.status === sf)
-            );
+            const orderFilter = document.getElementById('filterOrder').value.toLowerCase().trim();
+            const receiverFilter = document.getElementById('filterReceiver').value.toLowerCase().trim();
+            const courierFilter = document.getElementById('filterCourier').value;
+            const statusFilter = document.getElementById('filterStatus').value;
+
+            let dataToFilter = [...data];
+            
+            // If we're in dashboard view, only show items that are "ასაგროვებელი"
+            if (currentView === 'dashboard') {
+                dataToFilter = data.filter(item => item.status === 'ასაგროვებელი');
+            }
+
+            filteredData = dataToFilter.filter(item => {
+                const orderMatch = !orderFilter || item.order.toLowerCase().includes(orderFilter);
+                const receiverMatch = !receiverFilter || item.receiver.toLowerCase().includes(receiverFilter);
+                const courierMatch = !courierFilter || item.courier === courierFilter;
+                const statusMatch = !statusFilter || item.status === statusFilter;
+
+                return orderMatch && receiverMatch && courierMatch && statusMatch;
+            });
+
             renderTable();
         }
 
         function clearAllFilters() {
-            ['filterOrder','filterReceiver','filterCourier','filterStatus'].forEach(id=>document.getElementById(id).value='');
+            document.getElementById('filterOrder').value = '';
+            document.getElementById('filterReceiver').value = '';
+            document.getElementById('filterCourier').value = '';
+            document.getElementById('filterStatus').value = '';
             applyFilters();
         }
 
-        ['filterOrder','filterReceiver'].forEach(id => {document.getElementById(id).addEventListener('input',applyFilters);});
-        ['filterCourier','filterStatus'].forEach(id => {document.getElementById(id).addEventListener('change',applyFilters);});
+        // ფილტრების event listeners
+        document.getElementById('filterOrder').addEventListener('input', applyFilters);
+        document.getElementById('filterReceiver').addEventListener('input', applyFilters);
+        document.getElementById('filterCourier').addEventListener('change', applyFilters);
+        document.getElementById('filterStatus').addEventListener('change', applyFilters);
     </script>
 </body>
 </html>
