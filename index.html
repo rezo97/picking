@@ -458,7 +458,8 @@
             const sharedData = urlParams.get('data');
             if (sharedData) {
                 try {
-                    const decodedData = JSON.parse(atob(sharedData));
+                    // Decode with proper UTF-8 decoding
+                    const decodedData = JSON.parse(decodeURIComponent(escape(atob(sharedData))));
                     data = decodedData;
                     populateCourierFilter();
                     applyFilters();
@@ -665,7 +666,9 @@
             }
 
             try {
-                const encodedData = btoa(JSON.stringify(data));
+                // Use btoa with proper UTF-8 encoding
+                const jsonString = JSON.stringify(data);
+                const encodedData = btoa(unescape(encodeURIComponent(jsonString)));
                 const shareUrl = `${window.location.origin}${window.location.pathname}?data=${encodedData}`;
                 
                 if (navigator.share) {
