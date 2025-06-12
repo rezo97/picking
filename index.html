@@ -74,6 +74,33 @@
             background: #2563eb;
         }
 
+        .view-toggle {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .view-btn {
+            background: white;
+            border: 2px solid #e5e7eb;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .view-btn.active {
+            background: #3b82f6;
+            color: white;
+            border-color: #3b82f6;
+        }
+
+        .view-btn:hover:not(.active) {
+            border-color: #3b82f6;
+            color: #3b82f6;
+        }
+
         .filters {
             background: white;
             padding: 20px;
@@ -222,6 +249,11 @@
             color: #1e293b;
         }
 
+        .date-column {
+            font-size: 12px;
+            color: #6b7280;
+        }
+
         @media (max-width: 768px) {
             .container {
                 padding: 10px;
@@ -249,6 +281,11 @@
                 </div>
                 <span id="fileName" style="color: #6b7280;"></span>
             </div>
+        </div>
+
+        <div class="view-toggle">
+            <button class="view-btn active" onclick="switchView('dashboard')">დეშბორდი</button>
+            <button class="view-btn" onclick="switchView('history')">ისტორია</button>
         </div>
 
         <div class="stats">
@@ -299,7 +336,7 @@
             <div class="table-wrapper">
                 <table id="dataTable">
                     <thead>
-                        <tr>
+                        <tr id="tableHeader">
                             <th>შეკვეთა</th>
                             <th>მიმღები</th>
                             <th>კურიერი</th>
@@ -323,6 +360,7 @@
     <script>
         let data = [];
         let filteredData = [];
+        let currentView = 'dashboard';
 
         // Excel ფაილის ატვირთვა
         document.getElementById('fileInput').addEventListener('change', function(e) {
@@ -350,11 +388,18 @@
                 receiver: row['მიმღები'] || row['Receiver'] || '',
                 courier: row['კურიერი'] || row['Courier'] || '',
                 type: row['ტემპი'] || row['Type'] || '',
-                status: 'ასაგროვებელი' // default status
+                status: 'ასაგროვებელი', // default status
+                statusChangedDate: null
             }));
 
             // კურიერების სია ფილტრისთვის
-            const couriers = [...new Set(data.map(item => item.courier))].filter(Boolean);
+            populateCourierFilter();
+            applyFilters();
+            updateStats();
+        }
+
+        function populateCourierFilter() {
+            const couriers = [...new Set(data.map(item => item.courier))].filter(Boolean).sort();
             const courierSelect = document.getElementById('filterCourier');
             courierSelect.innerHTML = '<option value="">ყველა კურიერი</option>';
             couriers.forEach(courier => {
@@ -363,19 +408,37 @@
                 option.textContent = courier;
                 courierSelect.appendChild(option);
             });
-
-            filteredData = [...data];
-            renderTable();
-            updateStats();
         }
 
         function renderTable() {
             const tbody = document.getElementById('tableBody');
+            const header = document.getElementById('tableHeader');
+            
+            // Update table header based on current view
+            if (currentView === 'history') {
+                header.innerHTML = `
+                    <th>შეკვეთა</th>
+                    <th>მიმღები</th>
+                    <th>კურიერი</th>
+                    <th>ტემპი</th>
+                    <th>სტატუსი</th>
+                    <th>შეცვლის თარიღი</th>
+                `;
+            } else {
+                header.innerHTML = `
+                    <th>შეკვეთა</th>
+                    <th>მიმღები</th>
+                    <th>კურიერი</th>
+                    <th>ტემპი</th>
+                    <th>სტატუსი</th>
+                `;
+            }
             
             if (filteredData.length === 0) {
+                const colspan = currentView === 'history' ? '6' : '5';
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="5" class="empty-state">
+                        <td colspan="${colspan}" class="empty-state">
                             <h3>მონაცემები არ მოიძებნა</h3>
                             <p>სცადეთ ფილტრების შეცვლა</p>
                         </td>
@@ -384,29 +447,55 @@
                 return;
             }
 
-            tbody.innerHTML = filteredData.map(item => `
-                <tr>
-                    <td>${item.order}</td>
-                    <td>${item.receiver}</td>
-                    <td>${item.courier}</td>
-                    <td>${item.type}</td>
-                    <td>
-                        <span class="status-badge ${item.status === 'აგროვებული' ? 'status-collected' : 'status-collect'}" 
-                              onclick="toggleStatus(${item.id})">
-                            ${item.status}
-                        </span>
-                    </td>
-                </tr>
-            `).join('');
+            tbody.innerHTML = filteredData.map(item => {
+                const statusClass = item.status === 'აგროვებული' ? 'status-collected' : 'status-collect';
+                const dateColumn = currentView === 'history' && item.statusChangedDate 
+                    ? `<td class="date-column">${item.statusChangedDate}</td>` 
+                    : currentView === 'history' ? '<td class="date-column">-</td>' : '';
+                
+                const statusCell = currentView === 'dashboard' 
+                    ? `<span class="status-badge ${statusClass}" onclick="toggleStatus(${item.id})">${item.status}</span>`
+                    : `<span class="status-badge ${statusClass}">${item.status}</span>`;
+
+                return `
+                    <tr>
+                        <td>${item.order}</td>
+                        <td>${item.receiver}</td>
+                        <td>${item.courier}</td>
+                        <td>${item.type}</td>
+                        <td>${statusCell}</td>
+                        ${dateColumn}
+                    </tr>
+                `;
+            }).join('');
         }
 
         function toggleStatus(id) {
             const item = data.find(d => d.id === id);
-            if (item) {
+            if (item && currentView === 'dashboard') {
+                const oldStatus = item.status;
                 item.status = item.status === 'ასაგროვებელი' ? 'აგროვებული' : 'ასაგროვებელი';
+                
+                // Set status change date
+                if (oldStatus !== item.status) {
+                    const now = new Date();
+                    item.statusChangedDate = now.toLocaleDateString('ka-GE') + ' ' + 
+                                           now.toLocaleTimeString('ka-GE', { hour: '2-digit', minute: '2-digit' });
+                }
+                
                 applyFilters();
                 updateStats();
             }
+        }
+
+        function switchView(view) {
+            currentView = view;
+            
+            // Update button states
+            document.querySelectorAll('.view-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            applyFilters();
         }
 
         function updateStats() {
@@ -420,18 +509,25 @@
         }
 
         function applyFilters() {
-            const orderFilter = document.getElementById('filterOrder').value.toLowerCase();
-            const receiverFilter = document.getElementById('filterReceiver').value.toLowerCase();
+            const orderFilter = document.getElementById('filterOrder').value.toLowerCase().trim();
+            const receiverFilter = document.getElementById('filterReceiver').value.toLowerCase().trim();
             const courierFilter = document.getElementById('filterCourier').value;
             const statusFilter = document.getElementById('filterStatus').value;
 
-            filteredData = data.filter(item => {
-                return (
-                    item.order.toLowerCase().includes(orderFilter) &&
-                    item.receiver.toLowerCase().includes(receiverFilter) &&
-                    (courierFilter === '' || item.courier === courierFilter) &&
-                    (statusFilter === '' || item.status === statusFilter)
-                );
+            let dataToFilter = [...data];
+            
+            // If we're in dashboard view, only show items that are "ასაგროვებელი"
+            if (currentView === 'dashboard') {
+                dataToFilter = data.filter(item => item.status === 'ასაგროვებელი');
+            }
+
+            filteredData = dataToFilter.filter(item => {
+                const orderMatch = !orderFilter || item.order.toLowerCase().includes(orderFilter);
+                const receiverMatch = !receiverFilter || item.receiver.toLowerCase().includes(receiverFilter);
+                const courierMatch = !courierFilter || item.courier === courierFilter;
+                const statusMatch = !statusFilter || item.status === statusFilter;
+
+                return orderMatch && receiverMatch && courierMatch && statusMatch;
             });
 
             renderTable();
