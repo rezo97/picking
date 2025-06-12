@@ -74,6 +74,36 @@
             background: #2563eb;
         }
 
+        .share-btn {
+            background: #10b981;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background-color 0.2s;
+        }
+
+        .share-btn:hover {
+            background: #059669;
+        }
+
+        .clear-data-btn {
+            background: #ef4444;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background-color 0.2s;
+        }
+
+        .clear-data-btn:hover {
+            background: #dc2626;
+        }
+
         .view-toggle {
             display: flex;
             gap: 10px;
@@ -254,6 +284,23 @@
             color: #6b7280;
         }
 
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #10b981;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            z-index: 1000;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
         @media (max-width: 768px) {
             .container {
                 padding: 10px;
@@ -279,6 +326,8 @@
                     <input type="file" id="fileInput" class="file-input" accept=".xlsx,.xls" />
                     <label for="fileInput" class="file-input-label">Excel ფაილის ატვირთვა</label>
                 </div>
+                <button class="share-btn" onclick="shareData()">მონაცემების გაზიარება</button>
+                <button class="clear-data-btn" onclick="clearAllData()">მონაცემების წაშლა</button>
                 <span id="fileName" style="color: #6b7280;"></span>
             </div>
         </div>
@@ -357,10 +406,71 @@
         </div>
     </div>
 
+    <div id="notification" class="notification"></div>
+
     <script>
         let data = [];
         let filteredData = [];
         let currentView = 'dashboard';
+        const STORAGE_KEY = 'orderManagementData';
+
+        // Load data on page load
+        window.addEventListener('load', function() {
+            loadDataFromStorage();
+            checkUrlParams();
+        });
+
+        // Save data to localStorage
+        function saveDataToStorage() {
+            try {
+                const dataToSave = {
+                    data: data,
+                    timestamp: new Date().toISOString()
+                };
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
+            } catch (error) {
+                console.error('Error saving data:', error);
+            }
+        }
+
+        // Load data from localStorage
+        function loadDataFromStorage() {
+            try {
+                const saved = localStorage.getItem(STORAGE_KEY);
+                if (saved) {
+                    const parsed = JSON.parse(saved);
+                    data = parsed.data || [];
+                    if (data.length > 0) {
+                        populateCourierFilter();
+                        applyFilters();
+                        updateStats();
+                        document.getElementById('fileName').textContent = `შენახული მონაცემები (${new Date(parsed.timestamp).toLocaleDateString('ka-GE')})`;
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading data:', error);
+            }
+        }
+
+        // Check URL parameters for shared data
+        function checkUrlParams() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const sharedData = urlParams.get('data');
+            if (sharedData) {
+                try {
+                    const decodedData = JSON.parse(atob(sharedData));
+                    data = decodedData;
+                    populateCourierFilter();
+                    applyFilters();
+                    updateStats();
+                    document.getElementById('fileName').textContent = 'გაზიარებული მონაცემები';
+                    showNotification('მონაცემები წარმატებით ჩაიტვირთა!');
+                } catch (error) {
+                    console.error('Error loading shared data:', error);
+                    showNotification('შეცდომა მონაცემების ჩატვირთვისას', 'error');
+                }
+            }
+        }
 
         // Excel ფაილის ატვირთვა
         document.getElementById('fileInput').addEventListener('change', function(e) {
@@ -377,22 +487,23 @@
                 const jsonData = XLSX.utils.sheet_to_json(worksheet);
                 
                 processData(jsonData);
+                saveDataToStorage();
+                showNotification('ფაილი წარმატებით ატვირთულია!');
             };
             reader.readAsBinaryString(file);
         });
 
         function processData(jsonData) {
             data = jsonData.map((row, index) => ({
-                id: index,
+                id: Date.now() + index, // More unique ID
                 order: row['შეკვეთა'] || row['Order'] || '',
                 receiver: row['მიმღები'] || row['Receiver'] || '',
                 courier: row['კურიერი'] || row['Courier'] || '',
                 type: row['ტემპი'] || row['Type'] || '',
-                status: 'ასაგროვებელი', // default status
+                status: 'ასაგროვებელი',
                 statusChangedDate: null
             }));
 
-            // კურიერების სია ფილტრისთვის
             populateCourierFilter();
             applyFilters();
             updateStats();
@@ -436,11 +547,14 @@
             
             if (filteredData.length === 0) {
                 const colspan = currentView === 'history' ? '6' : '5';
+                const message = data.length === 0 ? 
+                    '<h3>მონაცემები ჯერ არ არის ატვირთული</h3><p>Excel ფაილის ატვირთვისთვის გამოიყენეთ ზედა ღილაკი</p>' :
+                    '<h3>მონაცემები არ მოიძებნა</h3><p>სცადეთ ფილტრების შეცვლა</p>';
+                
                 tbody.innerHTML = `
                     <tr>
                         <td colspan="${colspan}" class="empty-state">
-                            <h3>მონაცემები არ მოიძებნა</h3>
-                            <p>სცადეთ ფილტრების შეცვლა</p>
+                            ${message}
                         </td>
                     </tr>
                 `;
@@ -483,6 +597,7 @@
                                            now.toLocaleTimeString('ka-GE', { hour: '2-digit', minute: '2-digit' });
                 }
                 
+                saveDataToStorage();
                 applyFilters();
                 updateStats();
             }
@@ -516,7 +631,7 @@
 
             let dataToFilter = [...data];
             
-            // If we're in dashboard view, only show items that are "ასაგროვებელი"
+            // If we're in dashboard view, show only items that are "ასაგროვებელი"
             if (currentView === 'dashboard') {
                 dataToFilter = data.filter(item => item.status === 'ასაგროვებელი');
             }
@@ -525,7 +640,9 @@
                 const orderMatch = !orderFilter || item.order.toLowerCase().includes(orderFilter);
                 const receiverMatch = !receiverFilter || item.receiver.toLowerCase().includes(receiverFilter);
                 const courierMatch = !courierFilter || item.courier === courierFilter;
-                const statusMatch = !statusFilter || item.status === statusFilter;
+                
+                // For history view, apply status filter; for dashboard view, ignore it since all are "ასაგროვებელი"
+                const statusMatch = currentView === 'dashboard' || !statusFilter || item.status === statusFilter;
 
                 return orderMatch && receiverMatch && courierMatch && statusMatch;
             });
@@ -539,6 +656,58 @@
             document.getElementById('filterCourier').value = '';
             document.getElementById('filterStatus').value = '';
             applyFilters();
+        }
+
+        function shareData() {
+            if (data.length === 0) {
+                showNotification('ჯერ ატვირთეთ მონაცემები გასაზიარებლად', 'error');
+                return;
+            }
+
+            try {
+                const encodedData = btoa(JSON.stringify(data));
+                const shareUrl = `${window.location.origin}${window.location.pathname}?data=${encodedData}`;
+                
+                if (navigator.share) {
+                    navigator.share({
+                        title: 'შეკვეთების მონაცემები',
+                        url: shareUrl
+                    });
+                } else {
+                    navigator.clipboard.writeText(shareUrl).then(() => {
+                        showNotification('ლინკი კოპირებულია!');
+                    }).catch(() => {
+                        prompt('ლინკის კოპირება:', shareUrl);
+                    });
+                }
+            } catch (error) {
+                console.error('Error sharing data:', error);
+                showNotification('შეცდომა მონაცემების გაზიარებისას', 'error');
+            }
+        }
+
+        function clearAllData() {
+            if (confirm('დარწმუნებული ხართ, რომ გსურთ ყველა მონაცემის წაშლა?')) {
+                data = [];
+                filteredData = [];
+                localStorage.removeItem(STORAGE_KEY);
+                document.getElementById('fileName').textContent = '';
+                populateCourierFilter();
+                applyFilters();
+                updateStats();
+                showNotification('მონაცემები წარმატებით წაიშალა');
+            }
+        }
+
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.style.background = type === 'error' ? '#ef4444' : '#10b981';
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
         }
 
         // ფილტრების event listeners
