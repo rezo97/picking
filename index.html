@@ -3,9 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>შეკვეთების მართვის სისტემა</title>
+    <title>შეკვეთების მართვის სისტემა (Firebase)</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+    
     <style>
+        /* თქვენი არსებული CSS სტილები - უცვლელია */
         * {
             margin: 0;
             padding: 0;
@@ -429,7 +434,6 @@
                     <input type="file" id="fileInput" class="file-input" accept=".xlsx,.xls" />
                     <label for="fileInput" class="file-input-label">Excel ფაილის ატვირთვა</label>
                 </div>
-                <button class="share-btn" onclick="shareData()">მონაცემების გაზიარება</button>
                 <button class="clear-data-btn" onclick="clearAllData()">მონაცემების წაშლა</button>
                 <span id="fileName" style="color: #6b7280;"></span>
             </div>
@@ -512,34 +516,554 @@
     <div id="notification" class="notification"></div>
 
     <script>
-        let data = [];
-        let filteredData = [];
-        let currentView = 'dashboard';
-        let syncId = null;
-        let isSharedSession = false;
-        let syncInterval = null;
-        let lastUpdateTime = 0;
-
-        // Use JavaScript variables instead of localStorage for sync
-        window.sharedData = window.sharedData || {};
-
-        // Load data on page load
-        window.addEventListener('load', function() {
-            checkUrlParams();
-            startSyncMonitoring();
-        });
-
-        // Start sync monitoring
-        function startSyncMonitoring() {
-            if (syncInterval) clearInterval(syncInterval);
-            syncInterval = setInterval(() => {
-                if (isSharedSession && syncId) {
-                    checkForUpdates();
-                }
-            }, 1000); // Check every second for real-time sync
+        // *** Firebase Configuration - ჩაანაცვლეთ აქ თქვენი საკუთარი პარამეტრებით ***
+        // *** ეს არის მაგალითი, თქვენ უნდა ჩასვათ თქვენი რეალური მონაცემები Firebase Console-დან ***
+        const firebaseConfig = {
+         <!DOCTYPE html>
+<html lang="ka">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>შეკვეთების მართვის სისტემა (Firebase)</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+    
+    <style>
+        /* თქვენი არსებული CSS სტილები - უცვლელია */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
 
-        // Update sync indicator
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #334155;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .header h1 {
+            color: #1e293b;
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .sync-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: #10b981;
+            color: white;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+            margin-top: 10px;
+        }
+
+        .sync-indicator.syncing {
+            background: #f59e0b;
+        }
+
+        .sync-indicator.error {
+            background: #ef4444;
+        }
+
+        .sync-dot {
+            width: 8px;
+            height: 8px;
+            background: white;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .upload-section {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .file-input-label {
+            background: linear-gradient(45deg, #3b82f6, #1d4ed8);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+        }
+
+        .file-input-label:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+        }
+
+        .share-btn {
+            background: linear-gradient(45deg, #10b981, #059669);
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+        }
+
+        .share-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+        }
+
+        .clear-data-btn {
+            background: linear-gradient(45deg, #ef4444, #dc2626);
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+        }
+
+        .clear-data-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+        }
+
+        .view-toggle {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .view-btn {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255,255,255,0.3);
+            padding: 12px 24px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+            color: #1e293b;
+        }
+
+        .view-btn.active {
+            background: linear-gradient(45deg, #3b82f6, #1d4ed8);
+            color: white;
+            border-color: transparent;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+        }
+
+        .view-btn:hover:not(.active) {
+            background: rgba(255, 255, 255, 1);
+            transform: translateY(-2px);
+        }
+
+        .filters {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .filters h3 {
+            margin-bottom: 15px;
+            color: #1e293b;
+            font-size: 18px;
+        }
+
+        .filter-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .filter-group label {
+            font-weight: 500;
+            margin-bottom: 5px;
+            color: #4b5563;
+        }
+
+        .filter-group input, .filter-group select {
+            padding: 10px 14px;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .filter-group input:focus, .filter-group select:focus {
+            outline: none;
+            border-color: #3b82f6;
+        }
+
+        .clear-filters {
+            background: linear-gradient(45deg, #ef4444, #dc2626);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .clear-filters:hover {
+            transform: translateY(-1px);
+        }
+
+        .table-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 16px 20px;
+            text-align: left;
+            border-bottom: 1px solid rgba(229, 231, 235, 0.5);
+        }
+
+        th {
+            background: rgba(248, 250, 252, 0.8);
+            font-weight: 600;
+            color: #374151;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        tbody tr:hover {
+            background: rgba(249, 250, 251, 0.8);
+        }
+
+        .status-badge {
+            padding: 12px 24px;
+            border-radius: 30px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 3px solid transparent;
+            display: inline-block;
+            min-width: 140px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-collect {
+            background: linear-gradient(45deg, #fbbf24, #f59e0b);
+            color: white;
+            box-shadow: 0 6px 20px rgba(251, 191, 36, 0.4);
+            border-color: #fbbf24;
+        }
+
+        .status-collected {
+            background: linear-gradient(45deg, #10b981, #059669);
+            color: white;
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+            border-color: #10b981;
+        }
+
+        .status-badge:hover {
+            transform: translateY(-3px) scale(1.08);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+        }
+
+        .status-badge::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.6s;
+        }
+
+        .status-badge:hover::before {
+            left: 100%;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6b7280;
+        }
+
+        .empty-state h3 {
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            transition: transform 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-card h4 {
+            color: #6b7280;
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .stat-card .number {
+            font-size: 28px;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        .date-column {
+            font-size: 12px;
+            color: #6b7280;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(45deg, #10b981, #059669);
+            color: white;
+            padding: 16px 24px;
+            border-radius: 12px;
+            z-index: 1000;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.error {
+            background: linear-gradient(45deg, #ef4444, #dc2626);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .filter-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div>
+                <h1>შეკვეთების მართვის სისტემა</h1>
+                <div class="sync-indicator" id="syncIndicator">
+                    <div class="sync-dot"></div>
+                    <span id="syncStatus">სინქრონიზებული</span>
+                </div>
+            </div>
+            <div class="upload-section">
+                <div class="file-input-wrapper">
+                    <input type="file" id="fileInput" class="file-input" accept=".xlsx,.xls" />
+                    <label for="fileInput" class="file-input-label">Excel ფაილის ატვირთვა</label>
+                </div>
+                <button class="clear-data-btn" onclick="clearAllData()">მონაცემების წაშლა</button>
+                <span id="fileName" style="color: #6b7280;"></span>
+            </div>
+        </div>
+
+        <div class="view-toggle">
+            <button class="view-btn active" onclick="switchView('dashboard')">დეშბორდი</button>
+            <button class="view-btn" onclick="switchView('history')">ისტორია</button>
+        </div>
+
+        <div class="stats">
+            <div class="stat-card">
+                <h4>სულ შეკვეთები</h4>
+                <div class="number" id="totalOrders">0</div>
+            </div>
+            <div class="stat-card">
+                <h4>ასაგროვებელი</h4>
+                <div class="number" id="toCollectOrders">0</div>
+            </div>
+            <div class="stat-card">
+                <h4>აგროვებული</h4>
+                <div class="number" id="collectedOrders">0</div>
+            </div>
+        </div>
+
+        <div class="filters">
+            <h3>ფილტრები</h3>
+            <div class="filter-row">
+                <div class="filter-group">
+                    <label>შეკვეთა</label>
+                    <input type="text" id="filterOrder" placeholder="ძებნა შეკვეთის მიხედვით">
+                </div>
+                <div class="filter-group">
+                    <label>მიმღები</label>
+                    <input type="text" id="filterReceiver" placeholder="ძებნა მიმღების მიხედვით">
+                </div>
+                <div class="filter-group">
+                    <label>კურიერი</label>
+                    <select id="filterCourier">
+                        <option value="">ყველა კურიერი</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>სტატუსი</label>
+                    <select id="filterStatus">
+                        <option value="">ყველა სტატუსი</option>
+                        <option value="ასაგროვებელი">ასაგროვებელი</option>
+                        <option value="აგროვებული">აგროვებული</option>
+                    </select>
+                </div>
+            </div>
+            <button class="clear-filters" onclick="clearAllFilters()">ფილტრების გასუფთავება</button>
+        </div>
+
+        <div class="table-container">
+            <div class="table-wrapper">
+                <table id="dataTable">
+                    <thead>
+                        <tr id="tableHeader">
+                            <th>შეკვეთა</th>
+                            <th>მიმღები</th>
+                            <th>კურიერი</th>
+                            <th>ტემპი</th>
+                            <th>სტატუსი</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        <tr>
+                            <td colspan="5" class="empty-state">
+                                <h3>მონაცემები ჯერ არ არის ატვირთული</h3>
+                                <p>Excel ფაილის ატვირთვისთვის გამოიყენეთ ზედა ღილაკი</p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="notification" class="notification"></div>
+
+    <script>
+        // *** Firebase Configuration - ჩაანაცვლეთ აქ თქვენი საკუთარი პარამეტრებით ***
+        // *** ეს არის მაგალითი, თქვენ უნდა ჩასვათ თქვენი რეალური მონაცემები Firebase Console-დან ***
+        const firebaseConfig = {
+          apiKey: "YOUR_API_KEY_FROM_FIREBASE", // <-- ჩაანაცვლეთ თქვენი API გასაღებით
+          authDomain: "YOUR_AUTH_DOMAIN_FROM_FIREBASE", // <-- ჩაანაცვლეთ თქვენი Auth Domain-ით
+          databaseURL: "YOUR_DATABASE_URL_FROM_FIREBASE", // <-- ჩაანაცვლეთ თქვენი Database URL-ით
+          projectId: "YOUR_PROJECT_ID_FROM_FIREBASE", // <-- ჩაანაცვლეთ თქვენი Project ID-ით
+          storageBucket: "YOUR_STORAGE_BUCKET_FROM_FIREBASE", // <-- ჩაანაცვლეთ თქვენი Storage Bucket-ით
+          messagingSenderId: "YOUR_MESSAGING_SENDER_ID_FROM_FIREBASE", // <-- ჩაანაცვლეთ თქვენი Messaging Sender ID-ით
+          appId: "YOUR_APP_ID_FROM_FIREBASE" // <-- ჩაანაცვლეთ თქვენი App ID-ით
+        };
+        // *** დასრულდა Firebase კონფიგურაციის ადგილი ***
+
+        // Firebase-ის ინიციალიზაცია
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+        const ordersRef = database.ref('orders'); // Root node for your orders
+
+        let data = []; // This will now hold the local representation of Firebase data
+        let filteredData = [];
+        let currentView = 'dashboard';
+        
+        // Load data from Firebase on page load and listen for changes
+        window.addEventListener('load', function() {
+            listenForFirebaseChanges();
+        });
+
         function updateSyncIndicator(status, message) {
             const indicator = document.getElementById('syncIndicator');
             const statusText = document.getElementById('syncStatus');
@@ -548,86 +1072,30 @@
             statusText.textContent = message;
         }
 
-        // Save data with sync
-        function saveDataWithSync() {
-            try {
-                const timestamp = Date.now();
-                lastUpdateTime = timestamp;
-                
-                // Save to shared memory for sync
-                if (isSharedSession && syncId) {
-                    window.sharedData[syncId] = {
-                        data: JSON.parse(JSON.stringify(data)), // Deep clone
-                        lastUpdate: timestamp
-                    };
-                    updateSyncIndicator('', 'სინქრონიზებული');
-                }
-            } catch (error) {
-                console.error('Error saving data:', error);
-                updateSyncIndicator('error', 'სინქრონიზაციის შეცდომა');
-            }
-        }
-
-        // Check for updates from other users
-        function checkForUpdates() {
-            try {
-                if (window.sharedData[syncId]) {
-                    const syncData = window.sharedData[syncId];
-                    // Check if remote data is newer
-                    if (syncData.lastUpdate > lastUpdateTime) {
-                        updateSyncIndicator('syncing', 'სინქრონიზება...');
-                        // Update local data with remote changes
-                        data = JSON.parse(JSON.stringify(syncData.data)); // Deep clone
-                        lastUpdateTime = syncData.lastUpdate;
-                        populateCourierFilter();
-                        applyFilters();
-                        updateStats();
-                        
-                        setTimeout(() => {
-                            updateSyncIndicator('', 'სინქრონიზებული');
-                            showNotification('მონაცემები განახლდა!');
-                        }, 500);
-                    }
-                }
-            } catch (error) {
-                console.error('Error checking for updates:', error);
-                updateSyncIndicator('error', 'სინქრონიზაციის შეცდომა');
-            }
-        }
-
-        // Check URL parameters for shared data
-        function checkUrlParams() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const sharedData = urlParams.get('data');
-            const sharedSyncId = urlParams.get('sync');
-            
-            if (sharedData) {
-                try {
-                    const decodedData = JSON.parse(decodeURIComponent(escape(atob(sharedData))));
-                    data = decodedData;
-                    
-                    // Set up sync
-                    syncId = sharedSyncId || 'sync_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-                    isSharedSession = true;
-                    lastUpdateTime = Date.now();
-                    // Initialize shared data
-                    window.sharedData[syncId] = {
-                        data: JSON.parse(JSON.stringify(data)),
-                        lastUpdate: lastUpdateTime
-                    };
+        // Listen for changes in Firebase Realtime Database
+        function listenForFirebaseChanges() {
+            updateSyncIndicator('syncing', 'სინქრონიზება...');
+            ordersRef.on('value', (snapshot) => {
+                const firebaseData = snapshot.val();
+                if (firebaseData) {
+                    // Convert Firebase object to array of objects
+                    data = Object.values(firebaseData);
                     populateCourierFilter();
                     applyFilters();
                     updateStats();
                     updateSyncIndicator('', 'სინქრონიზებული');
-                    document.getElementById('fileName').textContent = 'გაზიარებული მონაცემები';
-                    showNotification('მონაცემები წარმატებით ჩაიტვირთა!');
-                    // Clean URL
-                    window.history.replaceState({}, document.title, window.location.pathname);
-                } catch (error) {
-                    console.error('Error loading shared data:', error);
-                    showNotification('შეცდომა მონაცემების ჩატვირთვისას', 'error');
+                } else {
+                    data = []; // No data in Firebase
+                    populateCourierFilter();
+                    applyFilters();
+                    updateStats();
+                    updateSyncIndicator('', 'სინქრონიზებული');
                 }
-            }
+            }, (error) => {
+                console.error("Firebase Read Failed:", error);
+                updateSyncIndicator('error', 'სინქრონიზაციის შეცდომა');
+                showNotification('Firebase-დან მონაცემების ჩატვირთვა ვერ მოხერხდა.', 'error');
+            });
         }
 
         // Excel file upload
@@ -645,13 +1113,9 @@
                     const worksheet = workbook.Sheets[sheetName];
                     const jsonData = XLSX.utils.sheet_to_json(worksheet);
                     
-                    processData(jsonData);
+                    processAndUploadData(jsonData);
                     
-                    // Generate sync ID for new data
-                    syncId = 'sync_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-                    isSharedSession = false;
-                    
-                    showNotification('ფაილი წარმატებით ატვირთულია!');
+                    showNotification('ფაილი წარმატებით ატვირთულია! მონაცემები სინქრონიზდება.');
                 } catch (error) {
                     console.error('Error processing file:', error);
                     showNotification('შეცდომა ფაილის დამუშავებისას', 'error');
@@ -660,20 +1124,36 @@
             reader.readAsBinaryString(file);
         });
 
-        function processData(jsonData) {
-            data = jsonData.map((row, index) => ({
-                id: Date.now() + index + Math.random() * 1000,
-                order: String(row['შეკვეთა'] || row['Order'] || '').trim(),
-                receiver: String(row['მიმღები'] || row['Receiver'] || '').trim(),
-                courier: String(row['კურიერი'] || row['Courier'] || '').trim(),
-                type: String(row['ტემპი'] || row['Type'] || '').trim(),
-                status: 'ასაგროვებელი',
-                statusChangedDate: null
-            }));
-            populateCourierFilter();
-            applyFilters();
-            updateStats();
-            saveDataWithSync(); // დაამატეთ ეს ხაზი, რათა ატვირთვისთანავე მოხდეს სინქრონიზაცია.
+        // Process data and upload to Firebase
+        function processAndUploadData(jsonData) {
+            const newData = {};
+            jsonData.forEach((row, index) => {
+                // Firebase-ში თითოეული ჩანაწერისთვის უნიკალური ID-ის გენერირება
+                const newRef = ordersRef.push(); 
+                const id = newRef.key; // Firebase-ის მიერ გენერირებული ID
+                
+                newData[id] = {
+                    id: id, // შევინახოთ ID ობიექტშიც
+                    order: String(row['შეკვეთა'] || row['Order'] || '').trim(),
+                    receiver: String(row['მიმღები'] || row['Receiver'] || '').trim(),
+                    courier: String(row['კურიერი'] || row['Courier'] || '').trim(),
+                    type: String(row['ტემპი'] || row['Type'] || '').trim(),
+                    status: 'ასაგროვებელი',
+                    statusChangedDate: null
+                };
+            });
+            
+            // Set all data at once to the 'orders' root
+            ordersRef.set(newData)
+                .then(() => {
+                    updateSyncIndicator('', 'სინქრონიზებული');
+                    showNotification('მონაცემები წარმატებით აიტვირთა Firebase-ში.');
+                })
+                .catch(error => {
+                    console.error("Firebase Write Failed:", error);
+                    updateSyncIndicator('error', 'ატვირთვის შეცდომა Firebase-ში');
+                    showNotification('მონაცემების Firebase-ში ატვირთვა ვერ მოხერხდა.', 'error');
+                });
         }
 
         function populateCourierFilter() {
@@ -692,7 +1172,6 @@
             const tbody = document.getElementById('tableBody');
             const header = document.getElementById('tableHeader');
             
-            // Update table header based on current view
             if (currentView === 'history') {
                 header.innerHTML = `
                     <th>შეკვეთა</th>
@@ -733,8 +1212,7 @@
                     ? `<td class="date-column">${item.statusChangedDate}</td>` 
                     : currentView === 'history' ? '<td class="date-column">-</td>' : '';
                 
-                // Status is clickable in both views for rollback functionality
-                const statusCell = `<span class="status-badge ${statusClass}" onclick="toggleStatus(${item.id})">${item.status}</span>`;
+                const statusCell = `<span class="status-badge ${statusClass}" onclick="toggleStatus('${item.id}')">${item.status}</span>`;
 
                 return `
                     <tr>
@@ -750,34 +1228,46 @@
         }
 
         function toggleStatus(id) {
-            const item = data.find(d => d.id === id);
-            if (item) {
-                updateSyncIndicator('syncing', 'სინქრონიზება...');
-                const oldStatus = item.status;
-                item.status = item.status === 'ასაგროვებელი' ? 'აგროვებული' : 'ასაგროვებელი';
-                // Set status change date
-                if (oldStatus !== item.status) {
-                    const now = new Date();
-                    item.statusChangedDate = now.toLocaleDateString('ka-GE') + ' ' + 
-                                           now.toLocaleTimeString('ka-GE', { hour: '2-digit', minute: '2-digit' });
+            const itemRef = database.ref('orders/' + id); // Get reference to the specific item in Firebase
+            itemRef.once('value').then(snapshot => {
+                const item = snapshot.val();
+                if (item) {
+                    updateSyncIndicator('syncing', 'სინქრონიზება...');
+                    const oldStatus = item.status;
+                    const newStatus = item.status === 'ასაგროვებელი' ? 'აგროვებული' : 'ასაგროვებელი';
+                    let newStatusChangedDate = item.statusChangedDate;
+
+                    if (oldStatus !== newStatus) {
+                        const now = new Date();
+                        newStatusChangedDate = now.toLocaleDateString('ka-GE') + ' ' + 
+                                               now.toLocaleTimeString('ka-GE', { hour: '2-digit', minute: '2-digit' });
+                    }
+                    
+                    // Update only the status and statusChangedDate fields in Firebase
+                    itemRef.update({
+                        status: newStatus,
+                        statusChangedDate: newStatusChangedDate
+                    })
+                    .then(() => {
+                        // Data will be re-rendered by the 'onValue' listener
+                        updateSyncIndicator('', 'სინქრონიზებული');
+                    })
+                    .catch(error => {
+                        console.error("Firebase Update Failed:", error);
+                        updateSyncIndicator('error', 'სტატუსის განახლების შეცდომა');
+                        showNotification('სტატუსის განახლება ვერ მოხერხდა.', 'error');
+                    });
                 }
-                
-                saveDataWithSync();
-                applyFilters();
-                updateStats();
-                
-                setTimeout(() => {
-                    updateSyncIndicator('', 'სინქრონიზებული');
-                }, 300);
-            }
+            }).catch(error => {
+                console.error("Error fetching item for toggle:", error);
+                showNotification('მონაცემების მოძიება ვერ მოხერხდა.', 'error');
+            });
         }
 
         function switchView(view) {
             currentView = view;
-            // Update button states
             document.querySelectorAll('.view-btn').forEach(btn => btn.classList.remove('active'));
             document.querySelector(`.view-toggle .view-btn[onclick="switchView('${view}')"]`).classList.add('active');
-            
             applyFilters();
         }
 
@@ -798,17 +1288,16 @@
             const statusFilter = document.getElementById('filterStatus').value;
 
             let dataToFilter = [...data];
-            // If we're in dashboard view, show only items that are "ასაგროვებელი"
+            
             if (currentView === 'dashboard') {
                 dataToFilter = data.filter(item => item.status === 'ასაგროვებელი');
             }
 
             filteredData = dataToFilter.filter(item => {
-                const orderMatch = !orderFilter || item.order.toLowerCase().includes(orderFilter);
-                const receiverMatch = !receiverFilter || item.receiver.toLowerCase().includes(receiverFilter);
+                const orderMatch = !orderFilter || String(item.order).toLowerCase().includes(orderFilter);
+                const receiverMatch = !receiverFilter || String(item.receiver).toLowerCase().includes(receiverFilter);
                 const courierMatch = !courierFilter || item.courier === courierFilter;
                 
-                // For history view, apply status filter; for dashboard view, ignore it since all are "ასაგროვებელი"
                 const statusMatch = currentView === 'dashboard' ? true : !statusFilter || item.status === statusFilter;
 
                 return orderMatch && receiverMatch && courierMatch && statusMatch;
@@ -836,68 +1325,325 @@
             notification.className = `notification show ${type}`;
             setTimeout(() => {
                 notification.className = `notification ${type}`;
-            }, 3000); // Hide after 3 seconds
-        }
-
-        function shareData() {
-            if (data.length === 0) {
-                showNotification('მონაცემები არ არის გასაზიარებლად!', 'error');
-                return;
-            }
-
-            try {
-                // Ensure syncId is set for the current session if not already shared
-                if (!syncId || !isSharedSession) {
-                     syncId = 'sync_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-                     isSharedSession = true;
-                     lastUpdateTime = Date.now();
-                     window.sharedData[syncId] = {
-                        data: JSON.parse(JSON.stringify(data)),
-                        lastUpdate: lastUpdateTime
-                    };
-                    updateSyncIndicator('', 'სინქრონიზებული');
-                }
-
-                // Encode data and sync ID for URL
-                const encodedData = btoa(unescape(encodeURIComponent(JSON.stringify(data))));
-                const shareUrl = `${window.location.origin}${window.location.pathname}?data=${encodedData}&sync=${syncId}`;
-                
-                navigator.clipboard.writeText(shareUrl).then(() => {
-                    showNotification('ლინკი კოპირებულია! გაუგზავნეთ სხვებს მონაცემების გასაზიარებლად.');
-                }).catch(err => {
-                    console.error('Error copying link:', err);
-                    showNotification('ლინკის კოპირება ვერ მოხერხდა.', 'error');
-                });
-            } catch (error) {
-                console.error('Error sharing data:', error);
-                showNotification('მონაცემების გაზიარების შეცდომა.', 'error');
-            }
+            }, 3000);
         }
 
         function clearAllData() {
-            if (confirm('ნამდვილად გსურთ ყველა მონაცემის წაშლა? ეს ქმედება შეუქცევადია.')) {
-                data = [];
-                filteredData = [];
-                syncId = null;
-                isSharedSession = false;
-                lastUpdateTime = 0;
-                window.sharedData = {}; // Clear shared data as well
-                populateCourierFilter();
-                applyFilters();
-                updateStats();
-                document.getElementById('fileName').textContent = '';
-                updateSyncIndicator('', 'სინქრონიზებული'); // Reset sync status
-                showNotification('ყველა მონაცემი წაშლილია!');
+            if (confirm('ნამდვილად გსურთ ყველა მონაცემის წაშლა? ეს ქმედება შეუქცევადია. ეს წაშლის მონაცემებს ყველა დაკავშირებულ მოწყობილობაზე!')) {
+                updateSyncIndicator('syncing', 'მონაცემების წაშლა...');
+                ordersRef.remove()
+                    .then(() => {
+                        updateSyncIndicator('', 'სინქრონიზებული');
+                        document.getElementById('fileName').textContent = '';
+                        showNotification('ყველა მონაცემი წაშლილია Firebase-დან!');
+                    })
+                    .catch(error => {
+                        console.error("Firebase Delete Failed:", error);
+                        updateSyncIndicator('error', 'მონაცემების წაშლის შეცდომა');
+                        showNotification('მონაცემების წაშლა ვერ მოხერხდა.', 'error');
+                    });
             }
         }
+    </script>
+</body>
+</html>
+        };
+        // *** დასრულდა Firebase კონფიგურაციის ადგილი ***
 
-        // Initial render when the page loads
-        document.addEventListener('DOMContentLoaded', () => {
-            populateCourierFilter();
-            applyFilters();
-            updateStats();
-            renderTable(); // Ensure table is rendered on initial load
+        // Firebase-ის ინიციალიზაცია
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+        const ordersRef = database.ref('orders'); // Root node for your orders
+
+        let data = []; // This will now hold the local representation of Firebase data
+        let filteredData = [];
+        let currentView = 'dashboard';
+        
+        // Load data from Firebase on page load and listen for changes
+        window.addEventListener('load', function() {
+            listenForFirebaseChanges();
         });
+
+        function updateSyncIndicator(status, message) {
+            const indicator = document.getElementById('syncIndicator');
+            const statusText = document.getElementById('syncStatus');
+            
+            indicator.className = `sync-indicator ${status}`;
+            statusText.textContent = message;
+        }
+
+        // Listen for changes in Firebase Realtime Database
+        function listenForFirebaseChanges() {
+            updateSyncIndicator('syncing', 'სინქრონიზება...');
+            ordersRef.on('value', (snapshot) => {
+                const firebaseData = snapshot.val();
+                if (firebaseData) {
+                    // Convert Firebase object to array of objects
+                    data = Object.values(firebaseData);
+                    populateCourierFilter();
+                    applyFilters();
+                    updateStats();
+                    updateSyncIndicator('', 'სინქრონიზებული');
+                } else {
+                    data = []; // No data in Firebase
+                    populateCourierFilter();
+                    applyFilters();
+                    updateStats();
+                    updateSyncIndicator('', 'სინქრონიზებული');
+                }
+            }, (error) => {
+                console.error("Firebase Read Failed:", error);
+                updateSyncIndicator('error', 'სინქრონიზაციის შეცდომა');
+                showNotification('Firebase-დან მონაცემების ჩატვირთვა ვერ მოხერხდა.', 'error');
+            });
+        }
+
+        // Excel file upload
+        document.getElementById('fileInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            document.getElementById('fileName').textContent = file.name;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const workbook = XLSX.read(e.target.result, { type: 'binary' });
+                    const sheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[sheetName];
+                    const jsonData = XLSX.utils.sheet_to_json(worksheet);
+                    
+                    processAndUploadData(jsonData);
+                    
+                    showNotification('ფაილი წარმატებით ატვირთულია! მონაცემები სინქრონიზდება.');
+                } catch (error) {
+                    console.error('Error processing file:', error);
+                    showNotification('შეცდომა ფაილის დამუშავებისას', 'error');
+                }
+            };
+            reader.readAsBinaryString(file);
+        });
+
+        // Process data and upload to Firebase
+        function processAndUploadData(jsonData) {
+            const newData = {};
+            jsonData.forEach((row, index) => {
+                // Firebase-ში თითოეული ჩანაწერისთვის უნიკალური ID-ის გენერირება
+                const newRef = ordersRef.push(); 
+                const id = newRef.key; // Firebase-ის მიერ გენერირებული ID
+                
+                newData[id] = {
+                    id: id, // შევინახოთ ID ობიექტშიც
+                    order: String(row['შეკვეთა'] || row['Order'] || '').trim(),
+                    receiver: String(row['მიმღები'] || row['Receiver'] || '').trim(),
+                    courier: String(row['კურიერი'] || row['Courier'] || '').trim(),
+                    type: String(row['ტემპი'] || row['Type'] || '').trim(),
+                    status: 'ასაგროვებელი',
+                    statusChangedDate: null
+                };
+            });
+            
+            // Set all data at once to the 'orders' root
+            ordersRef.set(newData)
+                .then(() => {
+                    updateSyncIndicator('', 'სინქრონიზებული');
+                    showNotification('მონაცემები წარმატებით აიტვირთა Firebase-ში.');
+                })
+                .catch(error => {
+                    console.error("Firebase Write Failed:", error);
+                    updateSyncIndicator('error', 'ატვირთვის შეცდომა Firebase-ში');
+                    showNotification('მონაცემების Firebase-ში ატვირთვა ვერ მოხერხდა.', 'error');
+                });
+        }
+
+        function populateCourierFilter() {
+            const couriers = [...new Set(data.map(item => item.courier))].filter(Boolean).sort();
+            const courierSelect = document.getElementById('filterCourier');
+            courierSelect.innerHTML = '<option value="">ყველა კურიერი</option>';
+            couriers.forEach(courier => {
+                const option = document.createElement('option');
+                option.value = courier;
+                option.textContent = courier;
+                courierSelect.appendChild(option);
+            });
+        }
+
+        function renderTable() {
+            const tbody = document.getElementById('tableBody');
+            const header = document.getElementById('tableHeader');
+            
+            if (currentView === 'history') {
+                header.innerHTML = `
+                    <th>შეკვეთა</th>
+                    <th>მიმღები</th>
+                    <th>კურიერი</th>
+                    <th>ტემპი</th>
+                    <th>სტატუსი</th>
+                    <th>შეცვლის თარიღი</th>
+                `;
+            } else {
+                header.innerHTML = `
+                    <th>შეკვეთა</th>
+                    <th>მიმღები</th>
+                    <th>კურიერი</th>
+                    <th>ტემპი</th>
+                    <th>სტატუსი</th>
+                `;
+            }
+            
+            if (filteredData.length === 0) {
+                const colspan = currentView === 'history' ? '6' : '5';
+                const message = data.length === 0 ?
+                    '<h3>მონაცემები ჯერ არ არის ატვირთული</h3><p>Excel ფაილის ატვირთვისთვის გამოიყენეთ ზედა ღილაკი</p>' :
+                    '<h3>მონაცემები არ მოიძებნა</h3><p>სცადეთ ფილტრების შეცვლა</p>';
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="${colspan}" class="empty-state">
+                            ${message}
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = filteredData.map(item => {
+                const statusClass = item.status === 'აგროვებული' ? 'status-collected' : 'status-collect';
+                const dateColumn = currentView === 'history' && item.statusChangedDate 
+                    ? `<td class="date-column">${item.statusChangedDate}</td>` 
+                    : currentView === 'history' ? '<td class="date-column">-</td>' : '';
+                
+                const statusCell = `<span class="status-badge ${statusClass}" onclick="toggleStatus('${item.id}')">${item.status}</span>`;
+
+                return `
+                    <tr>
+                        <td>${item.order}</td>
+                        <td>${item.receiver}</td>
+                        <td>${item.courier}</td>
+                        <td>${item.type}</td>
+                        <td>${statusCell}</td>
+                        ${dateColumn}
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function toggleStatus(id) {
+            const itemRef = database.ref('orders/' + id); // Get reference to the specific item in Firebase
+            itemRef.once('value').then(snapshot => {
+                const item = snapshot.val();
+                if (item) {
+                    updateSyncIndicator('syncing', 'სინქრონიზება...');
+                    const oldStatus = item.status;
+                    const newStatus = item.status === 'ასაგროვებელი' ? 'აგროვებული' : 'ასაგროვებელი';
+                    let newStatusChangedDate = item.statusChangedDate;
+
+                    if (oldStatus !== newStatus) {
+                        const now = new Date();
+                        newStatusChangedDate = now.toLocaleDateString('ka-GE') + ' ' + 
+                                               now.toLocaleTimeString('ka-GE', { hour: '2-digit', minute: '2-digit' });
+                    }
+                    
+                    // Update only the status and statusChangedDate fields in Firebase
+                    itemRef.update({
+                        status: newStatus,
+                        statusChangedDate: newStatusChangedDate
+                    })
+                    .then(() => {
+                        // Data will be re-rendered by the 'onValue' listener
+                        updateSyncIndicator('', 'სინქრონიზებული');
+                    })
+                    .catch(error => {
+                        console.error("Firebase Update Failed:", error);
+                        updateSyncIndicator('error', 'სტატუსის განახლების შეცდომა');
+                        showNotification('სტატუსის განახლება ვერ მოხერხდა.', 'error');
+                    });
+                }
+            }).catch(error => {
+                console.error("Error fetching item for toggle:", error);
+                showNotification('მონაცემების მოძიება ვერ მოხერხდა.', 'error');
+            });
+        }
+
+        function switchView(view) {
+            currentView = view;
+            document.querySelectorAll('.view-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelector(`.view-toggle .view-btn[onclick="switchView('${view}')"]`).classList.add('active');
+            applyFilters();
+        }
+
+        function updateStats() {
+            const total = data.length;
+            const toCollect = data.filter(item => item.status === 'ასაგროვებელი').length;
+            const collected = data.filter(item => item.status === 'აგროვებული').length;
+
+            document.getElementById('totalOrders').textContent = total;
+            document.getElementById('toCollectOrders').textContent = toCollect;
+            document.getElementById('collectedOrders').textContent = collected;
+        }
+
+        function applyFilters() {
+            const orderFilter = document.getElementById('filterOrder').value.toLowerCase().trim();
+            const receiverFilter = document.getElementById('filterReceiver').value.toLowerCase().trim();
+            const courierFilter = document.getElementById('filterCourier').value;
+            const statusFilter = document.getElementById('filterStatus').value;
+
+            let dataToFilter = [...data];
+            
+            if (currentView === 'dashboard') {
+                dataToFilter = data.filter(item => item.status === 'ასაგროვებელი');
+            }
+
+            filteredData = dataToFilter.filter(item => {
+                const orderMatch = !orderFilter || String(item.order).toLowerCase().includes(orderFilter);
+                const receiverMatch = !receiverFilter || String(item.receiver).toLowerCase().includes(receiverFilter);
+                const courierMatch = !courierFilter || item.courier === courierFilter;
+                
+                const statusMatch = currentView === 'dashboard' ? true : !statusFilter || item.status === statusFilter;
+
+                return orderMatch && receiverMatch && courierMatch && statusMatch;
+            });
+            renderTable();
+        }
+
+        // Filter event listeners
+        document.getElementById('filterOrder').addEventListener('input', applyFilters);
+        document.getElementById('filterReceiver').addEventListener('input', applyFilters);
+        document.getElementById('filterCourier').addEventListener('change', applyFilters);
+        document.getElementById('filterStatus').addEventListener('change', applyFilters);
+
+        function clearAllFilters() {
+            document.getElementById('filterOrder').value = '';
+            document.getElementById('filterReceiver').value = '';
+            document.getElementById('filterCourier').value = '';
+            document.getElementById('filterStatus').value = '';
+            applyFilters();
+        }
+
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = `notification show ${type}`;
+            setTimeout(() => {
+                notification.className = `notification ${type}`;
+            }, 3000);
+        }
+
+        function clearAllData() {
+            if (confirm('ნამდვილად გსურთ ყველა მონაცემის წაშლა? ეს ქმედება შეუქცევადია. ეს წაშლის მონაცემებს ყველა დაკავშირებულ მოწყობილობაზე!')) {
+                updateSyncIndicator('syncing', 'მონაცემების წაშლა...');
+                ordersRef.remove()
+                    .then(() => {
+                        updateSyncIndicator('', 'სინქრონიზებული');
+                        document.getElementById('fileName').textContent = '';
+                        showNotification('ყველა მონაცემი წაშლილია Firebase-დან!');
+                    })
+                    .catch(error => {
+                        console.error("Firebase Delete Failed:", error);
+                        updateSyncIndicator('error', 'მონაცემების წაშლის შეცდომა');
+                        showNotification('მონაცემების წაშლა ვერ მოხერხდა.', 'error');
+                    });
+            }
+        }
     </script>
 </body>
 </html>
