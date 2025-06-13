@@ -14,7 +14,8 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #f8fafc;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
             color: #334155;
         }
 
@@ -24,23 +25,86 @@
             padding: 20px;
         }
 
-        .header {
-            background: white;
+        .logo-container {
+            text-align: center;
+            margin-bottom: 30px;
             padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .logo {
+            display: inline-block;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            padding: 15px 30px;
+            border-radius: 50px;
+            color: white;
+            font-size: 28px;
+            font-weight: bold;
+            text-decoration: none;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+            transition: transform 0.3s ease;
+        }
+
+        .logo:hover {
+            transform: translateY(-2px);
+        }
+
+        .logo::before {
+            content: "👗";
+            margin-right: 10px;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
             margin-bottom: 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
             gap: 15px;
+            border: 1px solid rgba(255,255,255,0.2);
         }
 
         .header h1 {
             color: #1e293b;
             font-size: 24px;
             font-weight: 600;
+        }
+
+        .sync-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: #10b981;
+            color: white;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .sync-indicator.syncing {
+            background: #f59e0b;
+        }
+
+        .sync-indicator.error {
+            background: #ef4444;
+        }
+
+        .sync-dot {
+            width: 8px;
+            height: 8px;
+            background: white;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
         }
 
         .upload-section {
@@ -61,47 +125,53 @@
         }
 
         .file-input-label {
-            background: #3b82f6;
+            background: linear-gradient(45deg, #3b82f6, #1d4ed8);
             color: white;
-            padding: 10px 20px;
-            border-radius: 8px;
+            padding: 12px 24px;
+            border-radius: 12px;
             cursor: pointer;
-            transition: background-color 0.2s;
+            transition: all 0.3s;
             font-weight: 500;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
         }
 
         .file-input-label:hover {
-            background: #2563eb;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
         }
 
         .share-btn {
-            background: #10b981;
+            background: linear-gradient(45deg, #10b981, #059669);
             color: white;
-            padding: 10px 20px;
+            padding: 12px 24px;
             border: none;
-            border-radius: 8px;
+            border-radius: 12px;
             cursor: pointer;
             font-weight: 500;
-            transition: background-color 0.2s;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
         }
 
         .share-btn:hover {
-            background: #059669;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
         }
 
         .clear-data-btn {
-            background: #ef4444;
+            background: linear-gradient(45deg, #ef4444, #dc2626);
             color: white;
-            padding: 10px 20px;
+            padding: 12px 24px;
             border: none;
-            border-radius: 8px;
+            border-radius: 12px;
             cursor: pointer;
             font-weight: 500;
-            transition: background-color 0.2s;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
         }
 
         .clear-data-btn:hover {
-            background: #dc2626;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
         }
 
         .view-toggle {
@@ -111,32 +181,37 @@
         }
 
         .view-btn {
-            background: white;
-            border: 2px solid #e5e7eb;
-            padding: 10px 20px;
-            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255,255,255,0.3);
+            padding: 12px 24px;
+            border-radius: 12px;
             cursor: pointer;
             font-weight: 500;
-            transition: all 0.2s;
+            transition: all 0.3s;
+            color: #1e293b;
         }
 
         .view-btn.active {
-            background: #3b82f6;
+            background: linear-gradient(45deg, #3b82f6, #1d4ed8);
             color: white;
-            border-color: #3b82f6;
+            border-color: transparent;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
         }
 
         .view-btn:hover:not(.active) {
-            border-color: #3b82f6;
-            color: #3b82f6;
+            background: rgba(255, 255, 255, 1);
+            transform: translateY(-2px);
         }
 
         .filters {
-            background: white;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
             padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
             margin-bottom: 20px;
+            border: 1px solid rgba(255,255,255,0.2);
         }
 
         .filters h3 {
@@ -164,31 +239,40 @@
         }
 
         .filter-group input, .filter-group select {
-            padding: 8px 12px;
-            border: 1px solid #d1d5db;
-            border-radius: 6px;
+            padding: 10px 14px;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
             font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .filter-group input:focus, .filter-group select:focus {
+            outline: none;
+            border-color: #3b82f6;
         }
 
         .clear-filters {
-            background: #ef4444;
+            background: linear-gradient(45deg, #ef4444, #dc2626);
             color: white;
             border: none;
-            padding: 8px 16px;
-            border-radius: 6px;
+            padding: 10px 20px;
+            border-radius: 10px;
             cursor: pointer;
             font-weight: 500;
+            transition: all 0.3s;
         }
 
         .clear-filters:hover {
-            background: #dc2626;
+            transform: translateY(-1px);
         }
 
         .table-container {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
             overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.2);
         }
 
         .table-wrapper {
@@ -201,13 +285,13 @@
         }
 
         th, td {
-            padding: 12px 16px;
+            padding: 16px 20px;
             text-align: left;
-            border-bottom: 1px solid #e5e7eb;
+            border-bottom: 1px solid rgba(229, 231, 235, 0.5);
         }
 
         th {
-            background: #f8fafc;
+            background: rgba(248, 250, 252, 0.8);
             font-weight: 600;
             color: #374151;
             position: sticky;
@@ -216,30 +300,54 @@
         }
 
         tbody tr:hover {
-            background: #f9fafb;
+            background: rgba(249, 250, 251, 0.8);
         }
 
         .status-badge {
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 500;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-size: 14px;
+            font-weight: 600;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+            display: inline-block;
+            min-width: 120px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
         }
 
         .status-collect {
-            background: #fef3c7;
-            color: #92400e;
+            background: linear-gradient(45deg, #fbbf24, #f59e0b);
+            color: white;
+            box-shadow: 0 4px 15px rgba(251, 191, 36, 0.3);
         }
 
         .status-collected {
-            background: #d1fae5;
-            color: #065f46;
+            background: linear-gradient(45deg, #10b981, #059669);
+            color: white;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
         }
 
         .status-badge:hover {
-            transform: scale(1.05);
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 0 6px 25px rgba(0,0,0,0.2);
+        }
+
+        .status-badge::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .status-badge:hover::before {
+            left: 100%;
         }
 
         .empty-state {
@@ -261,21 +369,28 @@
         }
 
         .stat-card {
-            background: white;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            transition: transform 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
         }
 
         .stat-card h4 {
             color: #6b7280;
             font-size: 14px;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
         }
 
         .stat-card .number {
-            font-size: 24px;
-            font-weight: 600;
+            font-size: 28px;
+            font-weight: 700;
             color: #1e293b;
         }
 
@@ -288,13 +403,14 @@
             position: fixed;
             top: 20px;
             right: 20px;
-            background: #10b981;
+            background: linear-gradient(45deg, #10b981, #059669);
             color: white;
-            padding: 12px 20px;
-            border-radius: 8px;
+            padding: 16px 24px;
+            border-radius: 12px;
             z-index: 1000;
             transform: translateX(400px);
             transition: transform 0.3s ease;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
         }
 
         .notification.show {
@@ -314,13 +430,28 @@
             .filter-row {
                 grid-template-columns: 1fr;
             }
+            
+            .logo {
+                font-size: 24px;
+                padding: 12px 24px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
+        <div class="logo-container">
+            <a href="https://dressup.ge" class="logo">dressup.ge</a>
+        </div>
+
         <div class="header">
-            <h1>შეკვეთების მართვის სისტემა</h1>
+            <div>
+                <h1>შეკვეთების მართვის სისტემა</h1>
+                <div class="sync-indicator" id="syncIndicator">
+                    <div class="sync-dot"></div>
+                    <span id="syncStatus">სინქრონიზებული</span>
+                </div>
+            </div>
             <div class="upload-section">
                 <div class="file-input-wrapper">
                     <input type="file" id="fileInput" class="file-input" accept=".xlsx,.xls" />
@@ -412,25 +543,114 @@
         let data = [];
         let filteredData = [];
         let currentView = 'dashboard';
+        let syncId = null;
+        let isSharedSession = false;
+        let syncInterval = null;
         const STORAGE_KEY = 'orderManagementData';
+        const SYNC_STORAGE_KEY = 'orderManagementSync';
 
         // Load data on page load
         window.addEventListener('load', function() {
             loadDataFromStorage();
             checkUrlParams();
+            startSyncMonitoring();
         });
 
-        // Save data to localStorage
-        function saveDataToStorage() {
+        // Start sync monitoring
+        function startSyncMonitoring() {
+            // Check for updates every 2 seconds
+            syncInterval = setInterval(() => {
+                if (isSharedSession && syncId) {
+                    checkForUpdates();
+                }
+            }, 2000);
+        }
+
+        // Update sync indicator
+        function updateSyncIndicator(status, message) {
+            const indicator = document.getElementById('syncIndicator');
+            const statusText = document.getElementById('syncStatus');
+            
+            indicator.className = `sync-indicator ${status}`;
+            statusText.textContent = message;
+        }
+
+        // Save data with sync
+        function saveDataWithSync() {
             try {
+                const timestamp = Date.now();
                 const dataToSave = {
                     data: data,
-                    timestamp: new Date().toISOString()
+                    timestamp: new Date().toISOString(),
+                    syncId: syncId,
+                    lastUpdate: timestamp
                 };
+                
+                // Save locally
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
+                
+                // Save to sync storage if this is a shared session
+                if (isSharedSession && syncId) {
+                    const syncData = {
+                        data: data,
+                        lastUpdate: timestamp,
+                        syncId: syncId
+                    };
+                    localStorage.setItem(SYNC_STORAGE_KEY + '_' + syncId, JSON.stringify(syncData));
+                    updateSyncIndicator('', 'სინქრონიზებული');
+                }
             } catch (error) {
                 console.error('Error saving data:', error);
+                updateSyncIndicator('error', 'სინქრონიზაციის შეცდომა');
             }
+        }
+
+        // Check for updates from other users
+        function checkForUpdates() {
+            try {
+                const syncKey = SYNC_STORAGE_KEY + '_' + syncId;
+                const syncDataStr = localStorage.getItem(syncKey);
+                
+                if (syncDataStr) {
+                    const syncData = JSON.parse(syncDataStr);
+                    const currentDataStr = localStorage.getItem(STORAGE_KEY);
+                    
+                    if (currentDataStr) {
+                        const currentData = JSON.parse(currentDataStr);
+                        
+                        // Check if remote data is newer
+                        if (syncData.lastUpdate > (currentData.lastUpdate || 0)) {
+                            updateSyncIndicator('syncing', 'სინქრონიზება...');
+                            
+                            // Update local data with remote changes
+                            data = syncData.data;
+                            populateCourierFilter();
+                            applyFilters();
+                            updateStats();
+                            
+                            // Save updated data locally
+                            const updatedData = {
+                                data: data,
+                                timestamp: new Date().toISOString(),
+                                syncId: syncId,
+                                lastUpdate: syncData.lastUpdate
+                            };
+                            localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedData));
+                            
+                            updateSyncIndicator('', 'სინქრონიზებული');
+                            showNotification('მონაცემები განახლდა!');
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Error checking for updates:', error);
+                updateSyncIndicator('error', 'სინქრონიზაციის შეცდომა');
+            }
+        }
+
+        // Save data to localStorage (legacy function)
+        function saveDataToStorage() {
+            saveDataWithSync();
         }
 
         // Load data from localStorage
@@ -440,6 +660,13 @@
                 if (saved) {
                     const parsed = JSON.parse(saved);
                     data = parsed.data || [];
+                    syncId = parsed.syncId;
+                    
+                    if (syncId) {
+                        isSharedSession = true;
+                        updateSyncIndicator('', 'სინქრონიზებული');
+                    }
+                    
                     if (data.length > 0) {
                         populateCourierFilter();
                         applyFilters();
@@ -456,16 +683,35 @@
         function checkUrlParams() {
             const urlParams = new URLSearchParams(window.location.search);
             const sharedData = urlParams.get('data');
+            const sharedSyncId = urlParams.get('sync');
+            
             if (sharedData) {
                 try {
                     // Decode with proper UTF-8 decoding
                     const decodedData = JSON.parse(decodeURIComponent(escape(atob(sharedData))));
                     data = decodedData;
+                    
+                    // Set up sync
+                    if (sharedSyncId) {
+                        syncId = sharedSyncId;
+                        isSharedSession = true;
+                        updateSyncIndicator('', 'სინქრონიზებული');
+                    } else {
+                        // Generate new sync ID for this shared session
+                        syncId = 'sync_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                        isSharedSession = true;
+                        updateSyncIndicator('', 'სინქრონიზებული');
+                    }
+                    
                     populateCourierFilter();
                     applyFilters();
                     updateStats();
+                    saveDataWithSync(); // Save with sync ID
                     document.getElementById('fileName').textContent = 'გაზიარებული მონაცემები';
                     showNotification('მონაცემები წარმატებით ჩაიტვირთა!');
+                    
+                    // Clean URL
+                    window.history.replaceState({}, document.title, window.location.pathname);
                 } catch (error) {
                     console.error('Error loading shared data:', error);
                     showNotification('შეცდომა მონაცემების ჩატვირთვისას', 'error');
@@ -488,7 +734,12 @@
                 const jsonData = XLSX.utils.sheet_to_json(worksheet);
                 
                 processData(jsonData);
-                saveDataToStorage();
+                
+                // Generate sync ID for new data
+                syncId = 'sync_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                isSharedSession = false; // Will become true when shared
+                
+                saveDataWithSync();
                 showNotification('ფაილი წარმატებით ატვირთულია!');
             };
             reader.readAsBinaryString(file);
@@ -496,7 +747,7 @@
 
         function processData(jsonData) {
             data = jsonData.map((row, index) => ({
-                id: Date.now() + index, // More unique ID
+                id: Date.now() + index,
                 order: row['შეკვეთა'] || row['Order'] || '',
                 receiver: row['მიმღები'] || row['Receiver'] || '',
                 courier: row['კურიერი'] || row['Courier'] || '',
@@ -588,136 +839,6 @@
         function toggleStatus(id) {
             const item = data.find(d => d.id === id);
             if (item && currentView === 'dashboard') {
-                const oldStatus = item.status;
-                item.status = item.status === 'ასაგროვებელი' ? 'აგროვებული' : 'ასაგროვებელი';
+                updateSyncIndicator('syncing', 'სინქრონიზება...');
                 
-                // Set status change date
-                if (oldStatus !== item.status) {
-                    const now = new Date();
-                    item.statusChangedDate = now.toLocaleDateString('ka-GE') + ' ' + 
-                                           now.toLocaleTimeString('ka-GE', { hour: '2-digit', minute: '2-digit' });
-                }
-                
-                saveDataToStorage();
-                applyFilters();
-                updateStats();
-            }
-        }
-
-        function switchView(view) {
-            currentView = view;
-            
-            // Update button states
-            document.querySelectorAll('.view-btn').forEach(btn => btn.classList.remove('active'));
-            event.target.classList.add('active');
-            
-            applyFilters();
-        }
-
-        function updateStats() {
-            const total = data.length;
-            const toCollect = data.filter(item => item.status === 'ასაგროვებელი').length;
-            const collected = data.filter(item => item.status === 'აგროვებული').length;
-
-            document.getElementById('totalOrders').textContent = total;
-            document.getElementById('toCollectOrders').textContent = toCollect;
-            document.getElementById('collectedOrders').textContent = collected;
-        }
-
-        function applyFilters() {
-            const orderFilter = document.getElementById('filterOrder').value.toLowerCase().trim();
-            const receiverFilter = document.getElementById('filterReceiver').value.toLowerCase().trim();
-            const courierFilter = document.getElementById('filterCourier').value;
-            const statusFilter = document.getElementById('filterStatus').value;
-
-            let dataToFilter = [...data];
-            
-            // If we're in dashboard view, show only items that are "ასაგროვებელი"
-            if (currentView === 'dashboard') {
-                dataToFilter = data.filter(item => item.status === 'ასაგროვებელი');
-            }
-
-            filteredData = dataToFilter.filter(item => {
-                const orderMatch = !orderFilter || item.order.toLowerCase().includes(orderFilter);
-                const receiverMatch = !receiverFilter || item.receiver.toLowerCase().includes(receiverFilter);
-                const courierMatch = !courierFilter || item.courier === courierFilter;
-                
-                // For history view, apply status filter; for dashboard view, ignore it since all are "ასაგროვებელი"
-                const statusMatch = currentView === 'dashboard' || !statusFilter || item.status === statusFilter;
-
-                return orderMatch && receiverMatch && courierMatch && statusMatch;
-            });
-
-            renderTable();
-        }
-
-        function clearAllFilters() {
-            document.getElementById('filterOrder').value = '';
-            document.getElementById('filterReceiver').value = '';
-            document.getElementById('filterCourier').value = '';
-            document.getElementById('filterStatus').value = '';
-            applyFilters();
-        }
-
-        function shareData() {
-            if (data.length === 0) {
-                showNotification('ჯერ ატვირთეთ მონაცემები გასაზიარებლად', 'error');
-                return;
-            }
-
-            try {
-                // Use btoa with proper UTF-8 encoding
-                const jsonString = JSON.stringify(data);
-                const encodedData = btoa(unescape(encodeURIComponent(jsonString)));
-                const shareUrl = `${window.location.origin}${window.location.pathname}?data=${encodedData}`;
-                
-                if (navigator.share) {
-                    navigator.share({
-                        title: 'შეკვეთების მონაცემები',
-                        url: shareUrl
-                    });
-                } else {
-                    navigator.clipboard.writeText(shareUrl).then(() => {
-                        showNotification('ლინკი კოპირებულია!');
-                    }).catch(() => {
-                        prompt('ლინკის კოპირება:', shareUrl);
-                    });
-                }
-            } catch (error) {
-                console.error('Error sharing data:', error);
-                showNotification('შეცდომა მონაცემების გაზიარებისას', 'error');
-            }
-        }
-
-        function clearAllData() {
-            if (confirm('დარწმუნებული ხართ, რომ გსურთ ყველა მონაცემის წაშლა?')) {
-                data = [];
-                filteredData = [];
-                localStorage.removeItem(STORAGE_KEY);
-                document.getElementById('fileName').textContent = '';
-                populateCourierFilter();
-                applyFilters();
-                updateStats();
-                showNotification('მონაცემები წარმატებით წაიშალა');
-            }
-        }
-
-        function showNotification(message, type = 'success') {
-            const notification = document.getElementById('notification');
-            notification.textContent = message;
-            notification.style.background = type === 'error' ? '#ef4444' : '#10b981';
-            notification.classList.add('show');
-            
-            setTimeout(() => {
-                notification.classList.remove('show');
-            }, 3000);
-        }
-
-        // ფილტრების event listeners
-        document.getElementById('filterOrder').addEventListener('input', applyFilters);
-        document.getElementById('filterReceiver').addEventListener('input', applyFilters);
-        document.getElementById('filterCourier').addEventListener('change', applyFilters);
-        document.getElementById('filterStatus').addEventListener('change', applyFilters);
-    </script>
-</body>
-</html>
+                const ol
