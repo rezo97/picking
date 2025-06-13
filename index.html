@@ -636,15 +636,31 @@
         }
 
         function populateCourierFilter() {
-            const couriers = [...new Set(data.map(item => item.courier))].filter(Boolean).sort();
             const courierSelect = document.getElementById('filterCourier');
+            // Save the currently selected courier value
+            const currentlySelectedCourier = courierSelect.value;
+
+            const couriers = [...new Set(data.map(item => item.courier))].filter(Boolean).sort();
+            
+            // Clear existing options
             courierSelect.innerHTML = '<option value="">ყველა კურიერი</option>';
+
+            // Add new options
             couriers.forEach(courier => {
                 const option = document.createElement('option');
                 option.value = courier;
                 option.textContent = courier;
                 courierSelect.appendChild(option);
             });
+
+            // Restore the previously selected courier if it's still available
+            if (couriers.includes(currentlySelectedCourier)) {
+                courierSelect.value = currentlySelectedCourier;
+            } else {
+                // If the previously selected courier is no longer in the data,
+                // ensure the filter defaults to "All Couriers"
+                courierSelect.value = ""; 
+            }
         }
 
         function renderTable() {
