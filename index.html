@@ -421,7 +421,7 @@
                 <h1>შეკვეთების მართვის სისტემა</h1>
                 <div class="sync-indicator" id="syncIndicator">
                     <div class="sync-dot"></div>
-                    <span id="syncStatus">სინქრონიზებული</span>
+                    <span id="syncStatus">მზად</span>
                 </div>
             </div>
             <div class="upload-section">
@@ -520,14 +520,85 @@
         let syncInterval = null;
         let lastUpdateTime = 0;
 
-        // Use JavaScript variables instead of localStorage for sync
+        // Use JavaScript variables for data sync
         window.sharedData = window.sharedData || {};
 
-        // Load data on page load
+        // Initialize on page load
         window.addEventListener('load', function() {
             checkUrlParams();
+            setupEventListeners();
             startSyncMonitoring();
         });
+
+        // Setup event listeners
+        function setupEventListeners() {
+            // File input change
+            document.getElementById('fileInput').addEventListener('change', handleFileUpload);
+            
+            // Filter inputs
+            document.getElementById('filterOrder').addEventListener('input', applyFilters);
+            document.getElementById('filterReceiver').addEventListener('input', applyFilters);
+            document.getElementById('filterCourier').addEventListener('change', applyFilters);
+            document.getElementById('filterStatus').addEventListener('change', applyFilters);
+        }
+
+        // Handle file upload
+        function handleFileUpload(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const fileName = file.name;
+            document.getElementById('fileName').textContent = fileName;
+            updateSyncIndicator('syncing', 'ფაილი იტვირთება...');
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const workbook = XLSX.read(e.target.result, { type: 'binary' });
+                    const sheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[sheetName];
+                    const jsonData = XLSX.utils.sheet_to_json(worksheet);
+                    
+                    processData(jsonData);
+                    
+                    // Generate sync ID for new data
+                    syncId = 'sync_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                    isSharedSession = false;
+                    
+                    updateSyncIndicator('', 'ფაილი წარმატებით ატვირთულია');
+                    showNotification('ფაილი წარმატებით ატვირთულია!');
+                } catch (error) {
+                    console.error('Error processing file:', error);
+                    updateSyncIndicator('error', 'შეცდომა ფაილის დამუშავებისას');
+                    showNotification('შეცდომა ფაილის დამუშავებისას', 'error');
+                }
+            };
+            
+            reader.onerror = function() {
+                updateSyncIndicator('error', 'შეცდომა ფაილის წაკითხვისას');
+                showNotification('შეცდომა ფაილის წაკითხვისას', 'error');
+            };
+            
+            reader.readAsBinaryString(file);
+        }
+
+        // Process uploaded data
+        function processData(jsonData) {
+            data = jsonData.map((row, index) => ({
+                id: Date.now() + index + Math.random() * 1000,
+                order: String(row['შეკვეთა'] || row['Order'] || '').trim(),
+                receiver: String(row['მიმღები'] || row['Receiver'] || '').trim(),
+                courier: String(row['კურიერი'] || row['Courier'] || '').trim(),
+                type: String(row['ტემპი'] || row['Type'] || '').trim(),
+                status: 'ასაგროვებელი',
+                statusChangedDate: null
+            }));
+
+            populateCourierFilter();
+            applyFilters();
+            updateStats();
+            saveDataWithSync();
+        }
 
         // Start sync monitoring
         function startSyncMonitoring() {
@@ -536,7 +607,7 @@
                 if (isSharedSession && syncId) {
                     checkForUpdates();
                 }
-            }, 1000); // Check every second for real-time sync
+            }, 1000);
         }
 
         // Update sync indicator
@@ -554,10 +625,9 @@
                 const timestamp = Date.now();
                 lastUpdateTime = timestamp;
                 
-                // Save to shared memory for sync
                 if (isSharedSession && syncId) {
                     window.sharedData[syncId] = {
-                        data: JSON.parse(JSON.stringify(data)), // Deep clone
+                        data: JSON.parse(JSON.stringify(data)),
                         lastUpdate: timestamp
                     };
                     updateSyncIndicator('', 'სინქრონიზებული');
@@ -574,12 +644,10 @@
                 if (window.sharedData[syncId]) {
                     const syncData = window.sharedData[syncId];
                     
-                    // Check if remote data is newer
                     if (syncData.lastUpdate > lastUpdateTime) {
                         updateSyncIndicator('syncing', 'სინქრონიზება...');
                         
-                        // Update local data with remote changes
-                        data = JSON.parse(JSON.stringify(syncData.data)); // Deep clone
+                        data = JSON.parse(JSON.stringify(syncData.data));
                         lastUpdateTime = syncData.lastUpdate;
                         
                         populateCourierFilter();
@@ -601,20 +669,18 @@
         // Check URL parameters for shared data
         function checkUrlParams() {
             const urlParams = new URLSearchParams(window.location.search);
-            const sharedData = urlParams.get('data');
+            const sharedDataParam = urlParams.get('data');
             const sharedSyncId = urlParams.get('sync');
             
-            if (sharedData) {
+            if (sharedDataParam) {
                 try {
-                    const decodedData = JSON.parse(decodeURIComponent(escape(atob(sharedData))));
+                    const decodedData = JSON.parse(decodeURIComponent(escape(atob(sharedDataParam))));
                     data = decodedData;
                     
-                    // Set up sync
                     syncId = sharedSyncId || 'sync_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
                     isSharedSession = true;
                     lastUpdateTime = Date.now();
                     
-                    // Initialize shared data
                     window.sharedData[syncId] = {
                         data: JSON.parse(JSON.stringify(data)),
                         lastUpdate: lastUpdateTime
@@ -631,57 +697,13 @@
                     window.history.replaceState({}, document.title, window.location.pathname);
                 } catch (error) {
                     console.error('Error loading shared data:', error);
+                    updateSyncIndicator('error', 'შეცდომა მონაცემების ჩატვირთვისას');
                     showNotification('შეცდომა მონაცემების ჩატვირთვისას', 'error');
                 }
             }
         }
 
-        // Excel file upload
-        document.getElementById('fileInput').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-
-            document.getElementById('fileName').textContent = file.name;
-
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const workbook = XLSX.read(e.target.result, { type: 'binary' });
-                    const sheetName = workbook.SheetNames[0];
-                    const worksheet = workbook.Sheets[sheetName];
-                    const jsonData = XLSX.utils.sheet_to_json(worksheet);
-                    
-                    processData(jsonData);
-                    
-                    // Generate sync ID for new data
-                    syncId = 'sync_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-                    isSharedSession = false;
-                    
-                    showNotification('ფაილი წარმატებით ატვირთულია!');
-                } catch (error) {
-                    console.error('Error processing file:', error);
-                    showNotification('შეცდომა ფაილის დამუშავებისას', 'error');
-                }
-            };
-            reader.readAsBinaryString(file);
-        });
-
-        function processData(jsonData) {
-            data = jsonData.map((row, index) => ({
-                id: Date.now() + index + Math.random() * 1000,
-                order: String(row['შეკვეთა'] || row['Order'] || '').trim(),
-                receiver: String(row['მიმღები'] || row['Receiver'] || '').trim(),
-                courier: String(row['კურიერი'] || row['Courier'] || '').trim(),
-                type: String(row['ტემპი'] || row['Type'] || '').trim(),
-                status: 'ასაგროვებელი',
-                statusChangedDate: null
-            }));
-
-            populateCourierFilter();
-            applyFilters();
-            updateStats();
-        }
-
+        // Populate courier filter
         function populateCourierFilter() {
             const couriers = [...new Set(data.map(item => item.courier))].filter(Boolean).sort();
             const courierSelect = document.getElementById('filterCourier');
@@ -694,6 +716,7 @@
             });
         }
 
+        // Render table
         function renderTable() {
             const tbody = document.getElementById('tableBody');
             const header = document.getElementById('tableHeader');
@@ -740,7 +763,6 @@
                     ? `<td class="date-column">${item.statusChangedDate}</td>` 
                     : currentView === 'history' ? '<td class="date-column">-</td>' : '';
                 
-                // Status is clickable in both views for rollback functionality
                 const statusCell = `<span class="status-badge ${statusClass}" onclick="toggleStatus(${item.id})">${item.status}</span>`;
 
                 return `
@@ -756,10 +778,11 @@
             }).join('');
         }
 
+        // Toggle status
         function toggleStatus(id) {
             const item = data.find(d => d.id === id);
             if (item) {
-                updateSyncIndicator('syncing', 'სინქრონიზება...');
+                updateSyncIndicator('syncing', 'სტატუსი იცვლება...');
                 
                 const oldStatus = item.status;
                 item.status = item.status === 'ასაგროვებელი' ? 'აგროვებული' : 'ასაგროვებელი';
@@ -774,58 +797,3 @@
                 saveDataWithSync();
                 applyFilters();
                 updateStats();
-                
-                setTimeout(() => {
-                    updateSyncIndicator('', 'სინქრონიზებული');
-                }, 300);
-            }
-        }
-
-        function switchView(view) {
-            currentView = view;
-            
-            // Update button states
-            document.querySelectorAll('.view-btn').forEach(btn => btn.classList.remove('active'));
-            event.target.classList.add('active');
-            
-            applyFilters();
-        }
-
-        function updateStats() {
-            const total = data.length;
-            const toCollect = data.filter(item => item.status === 'ასაგროვებელი').length;
-            const collected = data.filter(item => item.status === 'აგროვებული').length;
-
-            document.getElementById('totalOrders').textContent = total;
-            document.getElementById('toCollectOrders').textContent = toCollect;
-            document.getElementById('collectedOrders').textContent = collected;
-        }
-
-        function applyFilters() {
-            const orderFilter = document.getElementById('filterOrder').value.toLowerCase().trim();
-            const receiverFilter = document.getElementById('filterReceiver').value.toLowerCase().trim();
-            const courierFilter = document.getElementById('filterCourier').value;
-            const statusFilter = document.getElementById('filterStatus').value;
-
-            let dataToFilter = [...data];
-            
-            // If we're in dashboard view, show only items that are "ასაგროვებელი"
-            if (currentView === 'dashboard') {
-                dataToFilter = data.filter(item => item.status === 'ასაგროვებელი');
-            }
-
-            filteredData = dataToFilter.filter(item => {
-                const orderMatch = !orderFilter || item.order.toLowerCase().includes(orderFilter);
-                const receiverMatch = !receiverFilter || item.receiver.toLowerCase().includes(receiverFilter);
-                const courierMatch = !courierFilter || item.courier === courierFilter;
-                
-                // For history view, apply status filter; for dashboard view, ignore it since all are "ასაგროვებელი"
-                const statusMatch = currentView === 'dashboard' || !statusFilter || item.status === statusFilter;
-
-                return orderMatch && receiverMatch && courierMatch && statusMatch;
-            });
-
-            renderTable();
-        }
-
-        function clearAll
