@@ -496,7 +496,7 @@
                             <th>შეკვეთა</th>
                             <th>მიმღები</th>
                             <th>კურიერი</th>
-                            <th>ტემპი</th>
+                            <th>თარო</th>
                             <th>სტატუსი</th>
                         </tr>
                     </thead>
@@ -616,7 +616,7 @@
                     order: String(row['შეკვეთა'] || row['Order'] || '').trim(),
                     receiver: String(row['მიმღები'] || row['Receiver'] || '').trim(),
                     courier: String(row['კურიერი'] || row['Courier'] || '').trim(),
-                    type: String(row['ტემპი'] || row['Type'] || '').trim(),
+                    type: String(row['თარო'] || row['Type'] || '').trim(),
                     status: 'ასაგროვებელი',
                     statusChangedDate: null
                 };
@@ -656,7 +656,7 @@
                     <th>შეკვეთა</th>
                     <th>მიმღები</th>
                     <th>კურიერი</th>
-                    <th>ტემპი</th>
+                    <th>თარო</th>
                     <th>სტატუსი</th>
                     <th>შეცვლის თარიღი</th>
                 `;
@@ -665,7 +665,7 @@
                     <th>შეკვეთა</th>
                     <th>მიმღები</th>
                     <th>კურიერი</th>
-                    <th>ტემპი</th>
+                    <th>თარო</th>
                     <th>სტატუსი</th>
                 `;
             }
