@@ -14,7 +14,8 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #f8fafc;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
             color: #334155;
         }
 
@@ -25,22 +26,58 @@
         }
 
         .header {
-            background: white;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
             padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
             margin-bottom: 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
             gap: 15px;
+            border: 1px solid rgba(255,255,255,0.2);
         }
 
         .header h1 {
             color: #1e293b;
             font-size: 24px;
             font-weight: 600;
+        }
+
+        .sync-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: #10b981;
+            color: white;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+            margin-top: 10px;
+        }
+
+        .sync-indicator.syncing {
+            background: #f59e0b;
+        }
+
+        .sync-indicator.error {
+            background: #ef4444;
+        }
+
+        .sync-dot {
+            width: 8px;
+            height: 8px;
+            background: white;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
         }
 
         .upload-section {
@@ -61,47 +98,53 @@
         }
 
         .file-input-label {
-            background: #3b82f6;
+            background: linear-gradient(45deg, #3b82f6, #1d4ed8);
             color: white;
-            padding: 10px 20px;
-            border-radius: 8px;
+            padding: 12px 24px;
+            border-radius: 12px;
             cursor: pointer;
-            transition: background-color 0.2s;
+            transition: all 0.3s;
             font-weight: 500;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
         }
 
         .file-input-label:hover {
-            background: #2563eb;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
         }
 
         .share-btn {
-            background: #10b981;
+            background: linear-gradient(45deg, #10b981, #059669);
             color: white;
-            padding: 10px 20px;
+            padding: 12px 24px;
             border: none;
-            border-radius: 8px;
+            border-radius: 12px;
             cursor: pointer;
             font-weight: 500;
-            transition: background-color 0.2s;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
         }
 
         .share-btn:hover {
-            background: #059669;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
         }
 
         .clear-data-btn {
-            background: #ef4444;
+            background: linear-gradient(45deg, #ef4444, #dc2626);
             color: white;
-            padding: 10px 20px;
+            padding: 12px 24px;
             border: none;
-            border-radius: 8px;
+            border-radius: 12px;
             cursor: pointer;
             font-weight: 500;
-            transition: background-color 0.2s;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
         }
 
         .clear-data-btn:hover {
-            background: #dc2626;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
         }
 
         .view-toggle {
@@ -111,32 +154,37 @@
         }
 
         .view-btn {
-            background: white;
-            border: 2px solid #e5e7eb;
-            padding: 10px 20px;
-            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255,255,255,0.3);
+            padding: 12px 24px;
+            border-radius: 12px;
             cursor: pointer;
             font-weight: 500;
-            transition: all 0.2s;
+            transition: all 0.3s;
+            color: #1e293b;
         }
 
         .view-btn.active {
-            background: #3b82f6;
+            background: linear-gradient(45deg, #3b82f6, #1d4ed8);
             color: white;
-            border-color: #3b82f6;
+            border-color: transparent;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
         }
 
         .view-btn:hover:not(.active) {
-            border-color: #3b82f6;
-            color: #3b82f6;
+            background: rgba(255, 255, 255, 1);
+            transform: translateY(-2px);
         }
 
         .filters {
-            background: white;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
             padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
             margin-bottom: 20px;
+            border: 1px solid rgba(255,255,255,0.2);
         }
 
         .filters h3 {
@@ -164,31 +212,40 @@
         }
 
         .filter-group input, .filter-group select {
-            padding: 8px 12px;
-            border: 1px solid #d1d5db;
-            border-radius: 6px;
+            padding: 10px 14px;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
             font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .filter-group input:focus, .filter-group select:focus {
+            outline: none;
+            border-color: #3b82f6;
         }
 
         .clear-filters {
-            background: #ef4444;
+            background: linear-gradient(45deg, #ef4444, #dc2626);
             color: white;
             border: none;
-            padding: 8px 16px;
-            border-radius: 6px;
+            padding: 10px 20px;
+            border-radius: 10px;
             cursor: pointer;
             font-weight: 500;
+            transition: all 0.3s;
         }
 
         .clear-filters:hover {
-            background: #dc2626;
+            transform: translateY(-1px);
         }
 
         .table-container {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
             overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.2);
         }
 
         .table-wrapper {
@@ -201,13 +258,13 @@
         }
 
         th, td {
-            padding: 12px 16px;
+            padding: 16px 20px;
             text-align: left;
-            border-bottom: 1px solid #e5e7eb;
+            border-bottom: 1px solid rgba(229, 231, 235, 0.5);
         }
 
         th {
-            background: #f8fafc;
+            background: rgba(248, 250, 252, 0.8);
             font-weight: 600;
             color: #374151;
             position: sticky;
@@ -216,30 +273,58 @@
         }
 
         tbody tr:hover {
-            background: #f9fafb;
+            background: rgba(249, 250, 251, 0.8);
         }
 
         .status-badge {
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 500;
+            padding: 12px 24px;
+            border-radius: 30px;
+            font-size: 14px;
+            font-weight: 700;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.3s;
+            border: 3px solid transparent;
+            display: inline-block;
+            min-width: 140px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .status-collect {
-            background: #fef3c7;
-            color: #92400e;
+            background: linear-gradient(45deg, #fbbf24, #f59e0b);
+            color: white;
+            box-shadow: 0 6px 20px rgba(251, 191, 36, 0.4);
+            border-color: #fbbf24;
         }
 
         .status-collected {
-            background: #d1fae5;
-            color: #065f46;
+            background: linear-gradient(45deg, #10b981, #059669);
+            color: white;
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+            border-color: #10b981;
         }
 
         .status-badge:hover {
-            transform: scale(1.05);
+            transform: translateY(-3px) scale(1.08);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+        }
+
+        .status-badge::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.6s;
+        }
+
+        .status-badge:hover::before {
+            left: 100%;
         }
 
         .empty-state {
@@ -261,21 +346,28 @@
         }
 
         .stat-card {
-            background: white;
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            transition: transform 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
         }
 
         .stat-card h4 {
             color: #6b7280;
             font-size: 14px;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
         }
 
         .stat-card .number {
-            font-size: 24px;
-            font-weight: 600;
+            font-size: 28px;
+            font-weight: 700;
             color: #1e293b;
         }
 
@@ -288,17 +380,22 @@
             position: fixed;
             top: 20px;
             right: 20px;
-            background: #10b981;
+            background: linear-gradient(45deg, #10b981, #059669);
             color: white;
-            padding: 12px 20px;
-            border-radius: 8px;
+            padding: 16px 24px;
+            border-radius: 12px;
             z-index: 1000;
             transform: translateX(400px);
             transition: transform 0.3s ease;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
         }
 
         .notification.show {
             transform: translateX(0);
+        }
+
+        .notification.error {
+            background: linear-gradient(45deg, #ef4444, #dc2626);
         }
 
         @media (max-width: 768px) {
@@ -320,7 +417,13 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>შეკვეთების მართვის სისტემა</h1>
+            <div>
+                <h1>შეკვეთების მართვის სისტემა</h1>
+                <div class="sync-indicator" id="syncIndicator">
+                    <div class="sync-dot"></div>
+                    <span id="syncStatus">სინქრონიზებული</span>
+                </div>
+            </div>
             <div class="upload-section">
                 <div class="file-input-wrapper">
                     <input type="file" id="fileInput" class="file-input" accept=".xlsx,.xls" />
@@ -412,43 +515,83 @@
         let data = [];
         let filteredData = [];
         let currentView = 'dashboard';
-        const STORAGE_KEY = 'orderManagementData';
+        let syncId = null;
+        let isSharedSession = false;
+        let syncInterval = null;
+        let lastUpdateTime = 0;
+
+        // Use JavaScript variables instead of localStorage for sync
+        window.sharedData = window.sharedData || {};
 
         // Load data on page load
         window.addEventListener('load', function() {
-            loadDataFromStorage();
             checkUrlParams();
+            startSyncMonitoring();
         });
 
-        // Save data to localStorage
-        function saveDataToStorage() {
+        // Start sync monitoring
+        function startSyncMonitoring() {
+            if (syncInterval) clearInterval(syncInterval);
+            syncInterval = setInterval(() => {
+                if (isSharedSession && syncId) {
+                    checkForUpdates();
+                }
+            }, 1000); // Check every second for real-time sync
+        }
+
+        // Update sync indicator
+        function updateSyncIndicator(status, message) {
+            const indicator = document.getElementById('syncIndicator');
+            const statusText = document.getElementById('syncStatus');
+            
+            indicator.className = `sync-indicator ${status}`;
+            statusText.textContent = message;
+        }
+
+        // Save data with sync
+        function saveDataWithSync() {
             try {
-                const dataToSave = {
-                    data: data,
-                    timestamp: new Date().toISOString()
-                };
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
+                const timestamp = Date.now();
+                lastUpdateTime = timestamp;
+                
+                // Save to shared memory for sync
+                if (isSharedSession && syncId) {
+                    window.sharedData[syncId] = {
+                        data: JSON.parse(JSON.stringify(data)), // Deep clone
+                        lastUpdate: timestamp
+                    };
+                    updateSyncIndicator('', 'სინქრონიზებული');
+                }
             } catch (error) {
                 console.error('Error saving data:', error);
+                updateSyncIndicator('error', 'სინქრონიზაციის შეცდომა');
             }
         }
 
-        // Load data from localStorage
-        function loadDataFromStorage() {
+        // Check for updates from other users
+        function checkForUpdates() {
             try {
-                const saved = localStorage.getItem(STORAGE_KEY);
-                if (saved) {
-                    const parsed = JSON.parse(saved);
-                    data = parsed.data || [];
-                    if (data.length > 0) {
+                if (window.sharedData[syncId]) {
+                    const syncData = window.sharedData[syncId];
+                    // Check if remote data is newer
+                    if (syncData.lastUpdate > lastUpdateTime) {
+                        updateSyncIndicator('syncing', 'სინქრონიზება...');
+                        // Update local data with remote changes
+                        data = JSON.parse(JSON.stringify(syncData.data)); // Deep clone
+                        lastUpdateTime = syncData.lastUpdate;
                         populateCourierFilter();
                         applyFilters();
                         updateStats();
-                        document.getElementById('fileName').textContent = `შენახული მონაცემები (${new Date(parsed.timestamp).toLocaleDateString('ka-GE')})`;
+                        
+                        setTimeout(() => {
+                            updateSyncIndicator('', 'სინქრონიზებული');
+                            showNotification('მონაცემები განახლდა!');
+                        }, 500);
                     }
                 }
             } catch (error) {
-                console.error('Error loading data:', error);
+                console.error('Error checking for updates:', error);
+                updateSyncIndicator('error', 'სინქრონიზაციის შეცდომა');
             }
         }
 
@@ -456,16 +599,30 @@
         function checkUrlParams() {
             const urlParams = new URLSearchParams(window.location.search);
             const sharedData = urlParams.get('data');
+            const sharedSyncId = urlParams.get('sync');
+            
             if (sharedData) {
                 try {
-                    // Decode with proper UTF-8 decoding
                     const decodedData = JSON.parse(decodeURIComponent(escape(atob(sharedData))));
                     data = decodedData;
+                    
+                    // Set up sync
+                    syncId = sharedSyncId || 'sync_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                    isSharedSession = true;
+                    lastUpdateTime = Date.now();
+                    // Initialize shared data
+                    window.sharedData[syncId] = {
+                        data: JSON.parse(JSON.stringify(data)),
+                        lastUpdate: lastUpdateTime
+                    };
                     populateCourierFilter();
                     applyFilters();
                     updateStats();
+                    updateSyncIndicator('', 'სინქრონიზებული');
                     document.getElementById('fileName').textContent = 'გაზიარებული მონაცემები';
                     showNotification('მონაცემები წარმატებით ჩაიტვირთა!');
+                    // Clean URL
+                    window.history.replaceState({}, document.title, window.location.pathname);
                 } catch (error) {
                     console.error('Error loading shared data:', error);
                     showNotification('შეცდომა მონაცემების ჩატვირთვისას', 'error');
@@ -473,7 +630,7 @@
             }
         }
 
-        // Excel ფაილის ატვირთვა
+        // Excel file upload
         document.getElementById('fileInput').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (!file) return;
@@ -482,32 +639,41 @@
 
             const reader = new FileReader();
             reader.onload = function(e) {
-                const workbook = XLSX.read(e.target.result, { type: 'binary' });
-                const sheetName = workbook.SheetNames[0];
-                const worksheet = workbook.Sheets[sheetName];
-                const jsonData = XLSX.utils.sheet_to_json(worksheet);
-                
-                processData(jsonData);
-                saveDataToStorage();
-                showNotification('ფაილი წარმატებით ატვირთულია!');
+                try {
+                    const workbook = XLSX.read(e.target.result, { type: 'binary' });
+                    const sheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[sheetName];
+                    const jsonData = XLSX.utils.sheet_to_json(worksheet);
+                    
+                    processData(jsonData);
+                    
+                    // Generate sync ID for new data
+                    syncId = 'sync_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                    isSharedSession = false;
+                    
+                    showNotification('ფაილი წარმატებით ატვირთულია!');
+                } catch (error) {
+                    console.error('Error processing file:', error);
+                    showNotification('შეცდომა ფაილის დამუშავებისას', 'error');
+                }
             };
             reader.readAsBinaryString(file);
         });
 
         function processData(jsonData) {
             data = jsonData.map((row, index) => ({
-                id: Date.now() + index, // More unique ID
-                order: row['შეკვეთა'] || row['Order'] || '',
-                receiver: row['მიმღები'] || row['Receiver'] || '',
-                courier: row['კურიერი'] || row['Courier'] || '',
-                type: row['ტემპი'] || row['Type'] || '',
+                id: Date.now() + index + Math.random() * 1000,
+                order: String(row['შეკვეთა'] || row['Order'] || '').trim(),
+                receiver: String(row['მიმღები'] || row['Receiver'] || '').trim(),
+                courier: String(row['კურიერი'] || row['Courier'] || '').trim(),
+                type: String(row['ტემპი'] || row['Type'] || '').trim(),
                 status: 'ასაგროვებელი',
                 statusChangedDate: null
             }));
-
             populateCourierFilter();
             applyFilters();
             updateStats();
+            saveDataWithSync(); // დაამატეთ ეს ხაზი, რათა ატვირთვისთანავე მოხდეს სინქრონიზაცია.
         }
 
         function populateCourierFilter() {
@@ -548,10 +714,9 @@
             
             if (filteredData.length === 0) {
                 const colspan = currentView === 'history' ? '6' : '5';
-                const message = data.length === 0 ? 
+                const message = data.length === 0 ?
                     '<h3>მონაცემები ჯერ არ არის ატვირთული</h3><p>Excel ფაილის ატვირთვისთვის გამოიყენეთ ზედა ღილაკი</p>' :
                     '<h3>მონაცემები არ მოიძებნა</h3><p>სცადეთ ფილტრების შეცვლა</p>';
-                
                 tbody.innerHTML = `
                     <tr>
                         <td colspan="${colspan}" class="empty-state">
@@ -568,9 +733,8 @@
                     ? `<td class="date-column">${item.statusChangedDate}</td>` 
                     : currentView === 'history' ? '<td class="date-column">-</td>' : '';
                 
-                const statusCell = currentView === 'dashboard' 
-                    ? `<span class="status-badge ${statusClass}" onclick="toggleStatus(${item.id})">${item.status}</span>`
-                    : `<span class="status-badge ${statusClass}">${item.status}</span>`;
+                // Status is clickable in both views for rollback functionality
+                const statusCell = `<span class="status-badge ${statusClass}" onclick="toggleStatus(${item.id})">${item.status}</span>`;
 
                 return `
                     <tr>
@@ -587,10 +751,10 @@
 
         function toggleStatus(id) {
             const item = data.find(d => d.id === id);
-            if (item && currentView === 'dashboard') {
+            if (item) {
+                updateSyncIndicator('syncing', 'სინქრონიზება...');
                 const oldStatus = item.status;
                 item.status = item.status === 'ასაგროვებელი' ? 'აგროვებული' : 'ასაგროვებელი';
-                
                 // Set status change date
                 if (oldStatus !== item.status) {
                     const now = new Date();
@@ -598,18 +762,21 @@
                                            now.toLocaleTimeString('ka-GE', { hour: '2-digit', minute: '2-digit' });
                 }
                 
-                saveDataToStorage();
+                saveDataWithSync();
                 applyFilters();
                 updateStats();
+                
+                setTimeout(() => {
+                    updateSyncIndicator('', 'სინქრონიზებული');
+                }, 300);
             }
         }
 
         function switchView(view) {
             currentView = view;
-            
             // Update button states
             document.querySelectorAll('.view-btn').forEach(btn => btn.classList.remove('active'));
-            event.target.classList.add('active');
+            document.querySelector(`.view-toggle .view-btn[onclick="switchView('${view}')"]`).classList.add('active');
             
             applyFilters();
         }
@@ -631,7 +798,6 @@
             const statusFilter = document.getElementById('filterStatus').value;
 
             let dataToFilter = [...data];
-            
             // If we're in dashboard view, show only items that are "ასაგროვებელი"
             if (currentView === 'dashboard') {
                 dataToFilter = data.filter(item => item.status === 'ასაგროვებელი');
@@ -643,13 +809,18 @@
                 const courierMatch = !courierFilter || item.courier === courierFilter;
                 
                 // For history view, apply status filter; for dashboard view, ignore it since all are "ასაგროვებელი"
-                const statusMatch = currentView === 'dashboard' || !statusFilter || item.status === statusFilter;
+                const statusMatch = currentView === 'dashboard' ? true : !statusFilter || item.status === statusFilter;
 
                 return orderMatch && receiverMatch && courierMatch && statusMatch;
             });
-
             renderTable();
         }
+
+        // Filter event listeners
+        document.getElementById('filterOrder').addEventListener('input', applyFilters);
+        document.getElementById('filterReceiver').addEventListener('input', applyFilters);
+        document.getElementById('filterCourier').addEventListener('change', applyFilters);
+        document.getElementById('filterStatus').addEventListener('change', applyFilters);
 
         function clearAllFilters() {
             document.getElementById('filterOrder').value = '';
@@ -659,65 +830,74 @@
             applyFilters();
         }
 
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.className = `notification show ${type}`;
+            setTimeout(() => {
+                notification.className = `notification ${type}`;
+            }, 3000); // Hide after 3 seconds
+        }
+
         function shareData() {
             if (data.length === 0) {
-                showNotification('ჯერ ატვირთეთ მონაცემები გასაზიარებლად', 'error');
+                showNotification('მონაცემები არ არის გასაზიარებლად!', 'error');
                 return;
             }
 
             try {
-                // Use btoa with proper UTF-8 encoding
-                const jsonString = JSON.stringify(data);
-                const encodedData = btoa(unescape(encodeURIComponent(jsonString)));
-                const shareUrl = `${window.location.origin}${window.location.pathname}?data=${encodedData}`;
-                
-                if (navigator.share) {
-                    navigator.share({
-                        title: 'შეკვეთების მონაცემები',
-                        url: shareUrl
-                    });
-                } else {
-                    navigator.clipboard.writeText(shareUrl).then(() => {
-                        showNotification('ლინკი კოპირებულია!');
-                    }).catch(() => {
-                        prompt('ლინკის კოპირება:', shareUrl);
-                    });
+                // Ensure syncId is set for the current session if not already shared
+                if (!syncId || !isSharedSession) {
+                     syncId = 'sync_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                     isSharedSession = true;
+                     lastUpdateTime = Date.now();
+                     window.sharedData[syncId] = {
+                        data: JSON.parse(JSON.stringify(data)),
+                        lastUpdate: lastUpdateTime
+                    };
+                    updateSyncIndicator('', 'სინქრონიზებული');
                 }
+
+                // Encode data and sync ID for URL
+                const encodedData = btoa(unescape(encodeURIComponent(JSON.stringify(data))));
+                const shareUrl = `${window.location.origin}${window.location.pathname}?data=${encodedData}&sync=${syncId}`;
+                
+                navigator.clipboard.writeText(shareUrl).then(() => {
+                    showNotification('ლინკი კოპირებულია! გაუგზავნეთ სხვებს მონაცემების გასაზიარებლად.');
+                }).catch(err => {
+                    console.error('Error copying link:', err);
+                    showNotification('ლინკის კოპირება ვერ მოხერხდა.', 'error');
+                });
             } catch (error) {
                 console.error('Error sharing data:', error);
-                showNotification('შეცდომა მონაცემების გაზიარებისას', 'error');
+                showNotification('მონაცემების გაზიარების შეცდომა.', 'error');
             }
         }
 
         function clearAllData() {
-            if (confirm('დარწმუნებული ხართ, რომ გსურთ ყველა მონაცემის წაშლა?')) {
+            if (confirm('ნამდვილად გსურთ ყველა მონაცემის წაშლა? ეს ქმედება შეუქცევადია.')) {
                 data = [];
                 filteredData = [];
-                localStorage.removeItem(STORAGE_KEY);
-                document.getElementById('fileName').textContent = '';
+                syncId = null;
+                isSharedSession = false;
+                lastUpdateTime = 0;
+                window.sharedData = {}; // Clear shared data as well
                 populateCourierFilter();
                 applyFilters();
                 updateStats();
-                showNotification('მონაცემები წარმატებით წაიშალა');
+                document.getElementById('fileName').textContent = '';
+                updateSyncIndicator('', 'სინქრონიზებული'); // Reset sync status
+                showNotification('ყველა მონაცემი წაშლილია!');
             }
         }
 
-        function showNotification(message, type = 'success') {
-            const notification = document.getElementById('notification');
-            notification.textContent = message;
-            notification.style.background = type === 'error' ? '#ef4444' : '#10b981';
-            notification.classList.add('show');
-            
-            setTimeout(() => {
-                notification.classList.remove('show');
-            }, 3000);
-        }
-
-        // ფილტრების event listeners
-        document.getElementById('filterOrder').addEventListener('input', applyFilters);
-        document.getElementById('filterReceiver').addEventListener('input', applyFilters);
-        document.getElementById('filterCourier').addEventListener('change', applyFilters);
-        document.getElementById('filterStatus').addEventListener('change', applyFilters);
+        // Initial render when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            populateCourierFilter();
+            applyFilters();
+            updateStats();
+            renderTable(); // Ensure table is rendered on initial load
+        });
     </script>
 </body>
 </html>
