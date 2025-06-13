@@ -25,34 +25,6 @@
             padding: 20px;
         }
 
-        .logo-container {
-            text-align: center;
-            margin-bottom: 30px;
-            padding: 20px;
-        }
-
-        .logo {
-            display: inline-block;
-            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
-            padding: 15px 30px;
-            border-radius: 50px;
-            color: white;
-            font-size: 28px;
-            font-weight: bold;
-            text-decoration: none;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
-            transition: transform 0.3s ease;
-        }
-
-        .logo:hover {
-            transform: translateY(-2px);
-        }
-
-        .logo::before {
-            content: "👗";
-            margin-right: 10px;
-        }
-
         .header {
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
@@ -84,6 +56,7 @@
             border-radius: 20px;
             font-size: 14px;
             font-weight: 500;
+            margin-top: 10px;
         }
 
         .sync-indicator.syncing {
@@ -304,35 +277,39 @@
         }
 
         .status-badge {
-            padding: 10px 20px;
-            border-radius: 25px;
+            padding: 12px 24px;
+            border-radius: 30px;
             font-size: 14px;
-            font-weight: 600;
+            font-weight: 700;
             cursor: pointer;
             transition: all 0.3s;
-            border: 2px solid transparent;
+            border: 3px solid transparent;
             display: inline-block;
-            min-width: 120px;
+            min-width: 140px;
             text-align: center;
             position: relative;
             overflow: hidden;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .status-collect {
             background: linear-gradient(45deg, #fbbf24, #f59e0b);
             color: white;
-            box-shadow: 0 4px 15px rgba(251, 191, 36, 0.3);
+            box-shadow: 0 6px 20px rgba(251, 191, 36, 0.4);
+            border-color: #fbbf24;
         }
 
         .status-collected {
             background: linear-gradient(45deg, #10b981, #059669);
             color: white;
-            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+            border-color: #10b981;
         }
 
         .status-badge:hover {
-            transform: translateY(-2px) scale(1.05);
-            box-shadow: 0 6px 25px rgba(0,0,0,0.2);
+            transform: translateY(-3px) scale(1.08);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.3);
         }
 
         .status-badge::before {
@@ -342,8 +319,8 @@
             left: -100%;
             width: 100%;
             height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-            transition: left 0.5s;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: left 0.6s;
         }
 
         .status-badge:hover::before {
@@ -417,6 +394,10 @@
             transform: translateX(0);
         }
 
+        .notification.error {
+            background: linear-gradient(45deg, #ef4444, #dc2626);
+        }
+
         @media (max-width: 768px) {
             .container {
                 padding: 10px;
@@ -430,20 +411,11 @@
             .filter-row {
                 grid-template-columns: 1fr;
             }
-            
-            .logo {
-                font-size: 24px;
-                padding: 12px 24px;
-            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="logo-container">
-            <a href="https://dressup.ge" class="logo">dressup.ge</a>
-        </div>
-
         <div class="header">
             <div>
                 <h1>შეკვეთების მართვის სისტემა</h1>
@@ -546,24 +518,25 @@
         let syncId = null;
         let isSharedSession = false;
         let syncInterval = null;
-        const STORAGE_KEY = 'orderManagementData';
-        const SYNC_STORAGE_KEY = 'orderManagementSync';
+        let lastUpdateTime = 0;
+
+        // Use JavaScript variables instead of localStorage for sync
+        window.sharedData = window.sharedData || {};
 
         // Load data on page load
         window.addEventListener('load', function() {
-            loadDataFromStorage();
             checkUrlParams();
             startSyncMonitoring();
         });
 
         // Start sync monitoring
         function startSyncMonitoring() {
-            // Check for updates every 2 seconds
+            if (syncInterval) clearInterval(syncInterval);
             syncInterval = setInterval(() => {
                 if (isSharedSession && syncId) {
                     checkForUpdates();
                 }
-            }, 2000);
+            }, 1000); // Check every second for real-time sync
         }
 
         // Update sync indicator
@@ -579,24 +552,14 @@
         function saveDataWithSync() {
             try {
                 const timestamp = Date.now();
-                const dataToSave = {
-                    data: data,
-                    timestamp: new Date().toISOString(),
-                    syncId: syncId,
-                    lastUpdate: timestamp
-                };
+                lastUpdateTime = timestamp;
                 
-                // Save locally
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
-                
-                // Save to sync storage if this is a shared session
+                // Save to shared memory for sync
                 if (isSharedSession && syncId) {
-                    const syncData = {
-                        data: data,
-                        lastUpdate: timestamp,
-                        syncId: syncId
+                    window.sharedData[syncId] = {
+                        data: JSON.parse(JSON.stringify(data)), // Deep clone
+                        lastUpdate: timestamp
                     };
-                    localStorage.setItem(SYNC_STORAGE_KEY + '_' + syncId, JSON.stringify(syncData));
                     updateSyncIndicator('', 'სინქრონიზებული');
                 }
             } catch (error) {
@@ -608,74 +571,30 @@
         // Check for updates from other users
         function checkForUpdates() {
             try {
-                const syncKey = SYNC_STORAGE_KEY + '_' + syncId;
-                const syncDataStr = localStorage.getItem(syncKey);
-                
-                if (syncDataStr) {
-                    const syncData = JSON.parse(syncDataStr);
-                    const currentDataStr = localStorage.getItem(STORAGE_KEY);
+                if (window.sharedData[syncId]) {
+                    const syncData = window.sharedData[syncId];
                     
-                    if (currentDataStr) {
-                        const currentData = JSON.parse(currentDataStr);
+                    // Check if remote data is newer
+                    if (syncData.lastUpdate > lastUpdateTime) {
+                        updateSyncIndicator('syncing', 'სინქრონიზება...');
                         
-                        // Check if remote data is newer
-                        if (syncData.lastUpdate > (currentData.lastUpdate || 0)) {
-                            updateSyncIndicator('syncing', 'სინქრონიზება...');
-                            
-                            // Update local data with remote changes
-                            data = syncData.data;
-                            populateCourierFilter();
-                            applyFilters();
-                            updateStats();
-                            
-                            // Save updated data locally
-                            const updatedData = {
-                                data: data,
-                                timestamp: new Date().toISOString(),
-                                syncId: syncId,
-                                lastUpdate: syncData.lastUpdate
-                            };
-                            localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedData));
-                            
+                        // Update local data with remote changes
+                        data = JSON.parse(JSON.stringify(syncData.data)); // Deep clone
+                        lastUpdateTime = syncData.lastUpdate;
+                        
+                        populateCourierFilter();
+                        applyFilters();
+                        updateStats();
+                        
+                        setTimeout(() => {
                             updateSyncIndicator('', 'სინქრონიზებული');
                             showNotification('მონაცემები განახლდა!');
-                        }
+                        }, 500);
                     }
                 }
             } catch (error) {
                 console.error('Error checking for updates:', error);
                 updateSyncIndicator('error', 'სინქრონიზაციის შეცდომა');
-            }
-        }
-
-        // Save data to localStorage (legacy function)
-        function saveDataToStorage() {
-            saveDataWithSync();
-        }
-
-        // Load data from localStorage
-        function loadDataFromStorage() {
-            try {
-                const saved = localStorage.getItem(STORAGE_KEY);
-                if (saved) {
-                    const parsed = JSON.parse(saved);
-                    data = parsed.data || [];
-                    syncId = parsed.syncId;
-                    
-                    if (syncId) {
-                        isSharedSession = true;
-                        updateSyncIndicator('', 'სინქრონიზებული');
-                    }
-                    
-                    if (data.length > 0) {
-                        populateCourierFilter();
-                        applyFilters();
-                        updateStats();
-                        document.getElementById('fileName').textContent = `შენახული მონაცემები (${new Date(parsed.timestamp).toLocaleDateString('ka-GE')})`;
-                    }
-                }
-            } catch (error) {
-                console.error('Error loading data:', error);
             }
         }
 
@@ -687,26 +606,24 @@
             
             if (sharedData) {
                 try {
-                    // Decode with proper UTF-8 decoding
                     const decodedData = JSON.parse(decodeURIComponent(escape(atob(sharedData))));
                     data = decodedData;
                     
                     // Set up sync
-                    if (sharedSyncId) {
-                        syncId = sharedSyncId;
-                        isSharedSession = true;
-                        updateSyncIndicator('', 'სინქრონიზებული');
-                    } else {
-                        // Generate new sync ID for this shared session
-                        syncId = 'sync_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-                        isSharedSession = true;
-                        updateSyncIndicator('', 'სინქრონიზებული');
-                    }
+                    syncId = sharedSyncId || 'sync_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                    isSharedSession = true;
+                    lastUpdateTime = Date.now();
+                    
+                    // Initialize shared data
+                    window.sharedData[syncId] = {
+                        data: JSON.parse(JSON.stringify(data)),
+                        lastUpdate: lastUpdateTime
+                    };
                     
                     populateCourierFilter();
                     applyFilters();
                     updateStats();
-                    saveDataWithSync(); // Save with sync ID
+                    updateSyncIndicator('', 'სინქრონიზებული');
                     document.getElementById('fileName').textContent = 'გაზიარებული მონაცემები';
                     showNotification('მონაცემები წარმატებით ჩაიტვირთა!');
                     
@@ -719,7 +636,7 @@
             }
         }
 
-        // Excel ფაილის ატვირთვა
+        // Excel file upload
         document.getElementById('fileInput').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (!file) return;
@@ -728,30 +645,34 @@
 
             const reader = new FileReader();
             reader.onload = function(e) {
-                const workbook = XLSX.read(e.target.result, { type: 'binary' });
-                const sheetName = workbook.SheetNames[0];
-                const worksheet = workbook.Sheets[sheetName];
-                const jsonData = XLSX.utils.sheet_to_json(worksheet);
-                
-                processData(jsonData);
-                
-                // Generate sync ID for new data
-                syncId = 'sync_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-                isSharedSession = false; // Will become true when shared
-                
-                saveDataWithSync();
-                showNotification('ფაილი წარმატებით ატვირთულია!');
+                try {
+                    const workbook = XLSX.read(e.target.result, { type: 'binary' });
+                    const sheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[sheetName];
+                    const jsonData = XLSX.utils.sheet_to_json(worksheet);
+                    
+                    processData(jsonData);
+                    
+                    // Generate sync ID for new data
+                    syncId = 'sync_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                    isSharedSession = false;
+                    
+                    showNotification('ფაილი წარმატებით ატვირთულია!');
+                } catch (error) {
+                    console.error('Error processing file:', error);
+                    showNotification('შეცდომა ფაილის დამუშავებისას', 'error');
+                }
             };
             reader.readAsBinaryString(file);
         });
 
         function processData(jsonData) {
             data = jsonData.map((row, index) => ({
-                id: Date.now() + index,
-                order: row['შეკვეთა'] || row['Order'] || '',
-                receiver: row['მიმღები'] || row['Receiver'] || '',
-                courier: row['კურიერი'] || row['Courier'] || '',
-                type: row['ტემპი'] || row['Type'] || '',
+                id: Date.now() + index + Math.random() * 1000,
+                order: String(row['შეკვეთა'] || row['Order'] || '').trim(),
+                receiver: String(row['მიმღები'] || row['Receiver'] || '').trim(),
+                courier: String(row['კურიერი'] || row['Courier'] || '').trim(),
+                type: String(row['ტემპი'] || row['Type'] || '').trim(),
                 status: 'ასაგროვებელი',
                 statusChangedDate: null
             }));
@@ -819,9 +740,8 @@
                     ? `<td class="date-column">${item.statusChangedDate}</td>` 
                     : currentView === 'history' ? '<td class="date-column">-</td>' : '';
                 
-                const statusCell = currentView === 'dashboard' 
-                    ? `<span class="status-badge ${statusClass}" onclick="toggleStatus(${item.id})">${item.status}</span>`
-                    : `<span class="status-badge ${statusClass}">${item.status}</span>`;
+                // Status is clickable in both views for rollback functionality
+                const statusCell = `<span class="status-badge ${statusClass}" onclick="toggleStatus(${item.id})">${item.status}</span>`;
 
                 return `
                     <tr>
@@ -838,7 +758,74 @@
 
         function toggleStatus(id) {
             const item = data.find(d => d.id === id);
-            if (item && currentView === 'dashboard') {
+            if (item) {
                 updateSyncIndicator('syncing', 'სინქრონიზება...');
                 
-                const ol
+                const oldStatus = item.status;
+                item.status = item.status === 'ასაგროვებელი' ? 'აგროვებული' : 'ასაგროვებელი';
+                
+                // Set status change date
+                if (oldStatus !== item.status) {
+                    const now = new Date();
+                    item.statusChangedDate = now.toLocaleDateString('ka-GE') + ' ' + 
+                                           now.toLocaleTimeString('ka-GE', { hour: '2-digit', minute: '2-digit' });
+                }
+                
+                saveDataWithSync();
+                applyFilters();
+                updateStats();
+                
+                setTimeout(() => {
+                    updateSyncIndicator('', 'სინქრონიზებული');
+                }, 300);
+            }
+        }
+
+        function switchView(view) {
+            currentView = view;
+            
+            // Update button states
+            document.querySelectorAll('.view-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            applyFilters();
+        }
+
+        function updateStats() {
+            const total = data.length;
+            const toCollect = data.filter(item => item.status === 'ასაგროვებელი').length;
+            const collected = data.filter(item => item.status === 'აგროვებული').length;
+
+            document.getElementById('totalOrders').textContent = total;
+            document.getElementById('toCollectOrders').textContent = toCollect;
+            document.getElementById('collectedOrders').textContent = collected;
+        }
+
+        function applyFilters() {
+            const orderFilter = document.getElementById('filterOrder').value.toLowerCase().trim();
+            const receiverFilter = document.getElementById('filterReceiver').value.toLowerCase().trim();
+            const courierFilter = document.getElementById('filterCourier').value;
+            const statusFilter = document.getElementById('filterStatus').value;
+
+            let dataToFilter = [...data];
+            
+            // If we're in dashboard view, show only items that are "ასაგროვებელი"
+            if (currentView === 'dashboard') {
+                dataToFilter = data.filter(item => item.status === 'ასაგროვებელი');
+            }
+
+            filteredData = dataToFilter.filter(item => {
+                const orderMatch = !orderFilter || item.order.toLowerCase().includes(orderFilter);
+                const receiverMatch = !receiverFilter || item.receiver.toLowerCase().includes(receiverFilter);
+                const courierMatch = !courierFilter || item.courier === courierFilter;
+                
+                // For history view, apply status filter; for dashboard view, ignore it since all are "ასაგროვებელი"
+                const statusMatch = currentView === 'dashboard' || !statusFilter || item.status === statusFilter;
+
+                return orderMatch && receiverMatch && courierMatch && statusMatch;
+            });
+
+            renderTable();
+        }
+
+        function clearAll
