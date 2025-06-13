@@ -7,10 +7,10 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script> <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
     
     <style>
-        /* თქვენი არსებული CSS სტილები - უცვლელია */
+        /* თქვენი არსებული CSS სტილები - უცვლელია, დამატებულია მხოლოდ ავტორიზაციის ელემენტებისთვის */
         * {
             margin: 0;
             padding: 0;
@@ -22,27 +22,35 @@
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             color: #334155;
+            display: flex; /* Flexbox დაემატა ცენტრირებისთვის */
+            justify-content: center; /* ცენტრში განლაგება */
+            align-items: flex-start; /* ზემოდან დაიწყოს კონტენტი */
+            padding: 20px; /* დაემატა padding */
         }
 
         .container {
             max-width: 1400px;
+            width: 100%; /* სრული სიგანე */
             margin: 0 auto;
-            padding: 20px;
+            padding: 0; /* padding ამოღებულია, რადგან body-ს აქვს */
         }
 
-        .header {
+        .header, .filters, .table-container, .auth-container, .user-management-container { /* დაემატა auth-container, user-management-container */
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
             padding: 20px;
             border-radius: 20px;
             box-shadow: 0 8px 32px rgba(0,0,0,0.1);
             margin-bottom: 20px;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             flex-wrap: wrap;
             gap: 15px;
-            border: 1px solid rgba(255,255,255,0.2);
         }
 
         .header h1 {
@@ -183,13 +191,7 @@
         }
 
         .filters {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            padding: 20px;
-            border-radius: 20px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
             margin-bottom: 20px;
-            border: 1px solid rgba(255,255,255,0.2);
         }
 
         .filters h3 {
@@ -216,7 +218,7 @@
             color: #4b5563;
         }
 
-        .filter-group input, .filter-group select {
+        .filter-group input, .filter-group select, .auth-container input, .user-management-container input { /* დაემატა auth-container input, user-management-container input */
             padding: 10px 14px;
             border: 2px solid #e5e7eb;
             border-radius: 10px;
@@ -224,7 +226,7 @@
             transition: border-color 0.3s;
         }
 
-        .filter-group input:focus, .filter-group select:focus {
+        .filter-group input:focus, .filter-group select:focus, .auth-container input:focus, .user-management-container input:focus { /* დაემატა auth-container input, user-management-container input */
             outline: none;
             border-color: #3b82f6;
         }
@@ -245,12 +247,7 @@
         }
 
         .table-container {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
             overflow: hidden;
-            border: 1px solid rgba(255,255,255,0.2);
         }
 
         .table-wrapper {
@@ -338,11 +335,6 @@
             color: #6b7280;
         }
 
-        .empty-state h3 {
-            font-size: 18px;
-            margin-bottom: 10px;
-        }
-
         .stats {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -403,6 +395,206 @@
             background: linear-gradient(45deg, #ef4444, #dc2626);
         }
 
+        /* ავთენტიფიკაციის სტილები */
+        .auth-container {
+            max-width: 400px;
+            margin: 50px auto;
+            text-align: center;
+        }
+
+        .auth-container h2 {
+            margin-bottom: 20px;
+            color: #1e293b;
+        }
+
+        .auth-container input {
+            width: calc(100% - 24px); /* Padding-ის გათვალისწინებით */
+            margin-bottom: 15px;
+        }
+
+        .auth-container button {
+            background: linear-gradient(45deg, #3b82f6, #1d4ed8);
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+            width: 100%;
+        }
+
+        .auth-container button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+        }
+
+        .auth-error {
+            color: #ef4444;
+            margin-top: 10px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #4b5563;
+            font-weight: 500;
+        }
+
+        .user-info button {
+            background: linear-gradient(45deg, #6b7280, #4b5563);
+            color: white;
+            padding: 8px 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+        
+        .user-info button:hover {
+            transform: translateY(-2px);
+        }
+
+        /* მომხმარებლების მართვის სტილები (ადმინისთვის) */
+        .user-management-container {
+            margin-top: 20px;
+        }
+
+        .user-management-container h3 {
+            margin-bottom: 15px;
+            color: #1e293b;
+        }
+
+        .user-management-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .create-user-form, .user-list-section {
+            background: rgba(255, 255, 255, 0.8);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .create-user-form h4, .user-list-section h4 {
+            margin-bottom: 15px;
+            color: #374151;
+        }
+
+        .create-user-form input {
+            margin-bottom: 10px;
+        }
+
+        .create-user-form button {
+            background: linear-gradient(45deg, #10b981, #059669);
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+            width: 100%;
+        }
+
+        .create-user-form button:hover {
+            transform: translateY(-2px);
+        }
+
+        .user-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .user-list li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px dashed rgba(229, 231, 235, 0.5);
+        }
+
+        .user-list li:last-child {
+            border-bottom: none;
+        }
+
+        .user-details span {
+            font-weight: 500;
+            color: #1e293b;
+        }
+
+        .permission-toggle {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .permission-toggle label {
+            font-size: 14px;
+            color: #4b5563;
+        }
+
+        /* Checkbox toggle switch */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 40px;
+            height: 24px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            -webkit-transition: .4s;
+            transition: .4s;
+            border-radius: 24px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            -webkit-transition: .4s;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: #10b981;
+        }
+
+        input:focus + .slider {
+            box-shadow: 0 0 1px #10b981;
+        }
+
+        input:checked + .slider:before {
+            -webkit-transform: translateX(16px);
+            -ms-transform: translateX(16px);
+            transform: translateX(16px);
+        }
+
+
         @media (max-width: 768px) {
             .container {
                 padding: 10px;
@@ -416,99 +608,146 @@
             .filter-row {
                 grid-template-columns: 1fr;
             }
+
+            .user-management-section {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <div>
-                <h1>შეკვეთების მართვის სისტემა</h1>
-                <div class="sync-indicator" id="syncIndicator">
-                    <div class="sync-dot"></div>
-                    <span id="syncStatus">სინქრონიზებული</span>
-                </div>
-            </div>
-            <div class="upload-section">
-                <div class="file-input-wrapper">
-                    <input type="file" id="fileInput" class="file-input" accept=".xlsx,.xls" />
-                    <label for="fileInput" class="file-input-label">Excel ფაილის ატვირთვა</label>
-                </div>
-                <button class="clear-data-btn" onclick="clearAllData()">მონაცემების წაშლა</button>
-                <span id="fileName" style="color: #6b7280;"></span>
-            </div>
+    <div class="container" id="appContainer">
+        <div class="auth-container" id="authContainer">
+            <h2>შესვლა</h2>
+            <input type="email" id="loginEmail" placeholder="ელ-ფოსტა" required>
+            <input type="password" id="loginPassword" placeholder="პაროლი" required>
+            <button onclick="handleLogin()">შესვლა</button>
+            <p id="authError" class="auth-error"></p>
+            <p style="margin-top: 15px; color: #4b5563;">
+                <span style="font-weight: bold;">ადმინის პირველადი დაყენება:</span> <br>
+                პირველი მომხმარებელი, რომელიც დარეგისტრირდება (მაგ. 'admin@example.com' 'password123'), ავტომატურად გახდება <span style="font-weight: bold; color: #dc2626;">სუპერ ადმინი</span>.
+                შემდეგ შეგიძლიათ მისი როლი შეცვალოთ და სხვა მომხმარებლების შექმნა/მართვა.
+            </p>
         </div>
 
-        <div class="view-toggle">
-            <button class="view-btn active" onclick="switchView('dashboard')">დეშბორდი</button>
-            <button class="view-btn" onclick="switchView('history')">ისტორია</button>
-        </div>
+        <div id="mainContent" style="display: none;">
+            <div class="header">
+                <div>
+                    <h1>შეკვეთების მართვის სისტემა</h1>
+                    <div class="sync-indicator" id="syncIndicator">
+                        <div class="sync-dot"></div>
+                        <span id="syncStatus">სინქრონიზებული</span>
+                    </div>
+                </div>
+                <div class="user-info">
+                    <span id="currentUserEmail"></span>
+                    <button onclick="handleLogout()">გასვლა</button>
+                </div>
+            </div>
 
-        <div class="stats">
-            <div class="stat-card">
-                <h4>სულ შეკვეთები</h4>
-                <div class="number" id="totalOrders">0</div>
+            <div class="view-toggle">
+                <button class="view-btn active" onclick="switchView('dashboard')">დეშბორდი</button>
+                <button class="view-btn" onclick="switchView('history')">ისტორია</button>
+                <button class="view-btn" id="userManagementBtn" style="display: none;" onclick="switchView('userManagement')">მომხმარებლები</button>
             </div>
-            <div class="stat-card">
-                <h4>ასაგროვებელი</h4>
-                <div class="number" id="toCollectOrders">0</div>
-            </div>
-            <div class="stat-card">
-                <h4>აგროვებული</h4>
-                <div class="number" id="collectedOrders">0</div>
-            </div>
-        </div>
 
-        <div class="filters">
-            <h3>ფილტრები</h3>
-            <div class="filter-row">
-                <div class="filter-group">
-                    <label>შეკვეთა</label>
-                    <input type="text" id="filterOrder" placeholder="ძებნა შეკვეთის მიხედვით">
-                </div>
-                <div class="filter-group">
-                    <label>მიმღები</label>
-                    <input type="text" id="filterReceiver" placeholder="ძებნა მიმღების მიხედვით">
-                </div>
-                <div class="filter-group">
-                    <label>კურიერი</label>
-                    <select id="filterCourier">
-                        <option value="">ყველა კურიერი</option>
-                    </select>
-                </div>
-                <div class="filter-group">
-                    <label>სტატუსი</label>
-                    <select id="filterStatus">
-                        <option value="">ყველა სტატუსი</option>
-                        <option value="ასაგროვებელი">ასაგროვებელი</option>
-                        <option value="აგროვებული">აგროვებული</option>
-                    </select>
+            <div id="userManagementSection" class="user-management-container" style="display: none;">
+                <h3>მომხმარებლების მართვა</h3>
+                <div class="user-management-section">
+                    <div class="create-user-form">
+                        <h4>ახალი მომხმარებლის შექმნა</h4>
+                        <input type="email" id="newUserEmail" placeholder="ელ-ფოსტა" required>
+                        <input type="password" id="newUserPassword" placeholder="პაროლი (მინ. 6 სიმბოლო)" required>
+                        <button onclick="createUser()">მომხმარებლის შექმნა</button>
+                    </div>
+                    <div class="user-list-section">
+                        <h4>არსებული მომხმარებლები</h4>
+                        <ul id="userList" class="user-list">
+                            <li>მონაცემები იტვირთება...</li>
+                        </ul>
+                    </div>
                 </div>
             </div>
-            <button class="clear-filters" onclick="clearAllFilters()">ფილტრების გასუფთავება</button>
-        </div>
 
-        <div class="table-container">
-            <div class="table-wrapper">
-                <table id="dataTable">
-                    <thead>
-                        <tr id="tableHeader">
-                            <th>შეკვეთა</th>
-                            <th>მიმღები</th>
-                            <th>კურიერი</th>
-                            <th>ტემპი</th>
-                            <th>სტატუსი</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tableBody">
-                        <tr>
-                            <td colspan="5" class="empty-state">
-                                <h3>მონაცემები ჯერ არ არის ატვირთული</h3>
-                                <p>Excel ფაილის ატვირთვისთვის გამოიყენეთ ზედა ღილაკი</p>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+            <div id="dashboardHistorySections">
+                <div class="stats">
+                    <div class="stat-card">
+                        <h4>სულ შეკვეთები</h4>
+                        <div class="number" id="totalOrders">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <h4>ასაგროვებელი</h4>
+                        <div class="number" id="toCollectOrders">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <h4>აგროვებული</h4>
+                        <div class="number" id="collectedOrders">0</div>
+                    </div>
+                </div>
+
+                <div class="filters">
+                    <h3>ფილტრები</h3>
+                    <div class="filter-row">
+                        <div class="filter-group">
+                            <label>შეკვეთა</label>
+                            <input type="text" id="filterOrder" placeholder="ძებნა შეკვეთის მიხედვით">
+                        </div>
+                        <div class="filter-group">
+                            <label>მიმღები</label>
+                            <input type="text" id="filterReceiver" placeholder="ძებნა მიმღების მიხედვით">
+                        </div>
+                        <div class="filter-group">
+                            <label>კურიერი</label>
+                            <select id="filterCourier">
+                                <option value="">ყველა კურიერი</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>სტატუსი</label>
+                            <select id="filterStatus">
+                                <option value="">ყველა სტატუსი</option>
+                                <option value="ასაგროვებელი">ასაგროვებელი</option>
+                                <option value="აგროვებული">აგროვებული</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button class="clear-filters" onclick="clearAllFilters()">ფილტრების გასუფთავება</button>
+                </div>
+
+                <div class="table-container">
+                    <div class="table-wrapper">
+                        <table id="dataTable">
+                            <thead>
+                                <tr id="tableHeader">
+                                    <th>შეკვეთა</th>
+                                    <th>მიმღები</th>
+                                    <th>კურიერი</th>
+                                    <th>ტემპი</th>
+                                    <th>სტატუსი</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tableBody">
+                                <tr>
+                                    <td colspan="5" class="empty-state">
+                                        <h3>მონაცემები ჯერ არ არის ატვირთული</h3>
+                                        <p>Excel ფაილის ატვირთვისთვის გამოიყენეთ ზედა ღილაკი</p>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="header" style="margin-top: 20px;">
+                    <div class="upload-section">
+                        <div class="file-input-wrapper">
+                            <input type="file" id="fileInput" class="file-input" accept=".xlsx,.xls" />
+                            <label for="fileInput" class="file-input-label">Excel ფაილის ატვირთვა</label>
+                        </div>
+                        <button class="clear-data-btn" id="clearDataBtn" style="display: none;" onclick="clearAllData()">მონაცემების წაშლა</button>
+                        <span id="fileName" style="color: #6b7280;"></span>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -518,30 +757,224 @@
     <script>
         // *** Firebase Configuration - ეს თქვენი Firebase პროექტის მონაცემებია ***
         const firebaseConfig = {
-            apiKey: "AIzaSyAX83Mj3ZPlhTC1PGlwpP6nNPc9INj_iAE",
+            apiKey: "AIzaSyAX83Mj3ZPlhTC1PGLwpP6nNPc9INj_iAE",
             authDomain: "picking-2da5d.firebaseapp.com",
             databaseURL: "https://picking-2da5d-default-rtdb.firebaseio.com",
             projectId: "picking-2da5d",
             storageBucket: "picking-2da5d.firebasestorage.app",
             messagingSenderId: "985054920430",
             appId: "1:985054920430:web:2e49cd2b1ebbab9ba23dff",
-            measurementId: "G-ZEJHW847HT" // ეს არ გამოიყენება ამ კოდში, მაგრამ არ წაშალოთ
+            measurementId: "G-ZEJHW847HT" 
         };
         // *** დასრულდა Firebase კონფიგურაციის ადგილი ***
 
         // Firebase-ის ინიციალიზაცია
         firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth(); // ახალი: Firebase Authentication ობიექტი
         const database = firebase.database();
         const ordersRef = database.ref('orders'); // Root node for your orders
+        const usersRef = database.ref('users'); // ახალი: Root node for user roles and permissions
 
-        let data = []; // This will now hold the local representation of Firebase data
+        let data = [];
         let filteredData = [];
         let currentView = 'dashboard';
-        
-        // Load data from Firebase on page load and listen for changes
-        window.addEventListener('load', function() {
-            listenForFirebaseChanges();
+        let currentUser = null; // ახალი: ავტორიზებული მომხმარებლის ობიექტი
+        let currentUserRole = null; // ახალი: მომხმარებლის როლი
+        let canDelete = false; // ახალი: მონაცემების წაშლის ნებართვა
+
+        // ავტორიზაციის სტატუსის ცვლილების მოსმენა
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                // მომხმარებელი შესულია
+                currentUser = user;
+                document.getElementById('currentUserEmail').textContent = user.email;
+                document.getElementById('authContainer').style.display = 'none';
+                document.getElementById('mainContent').style.display = 'block';
+                
+                // მომხმარებლის როლის და ნებართვების ჩატვირთვა
+                usersRef.child(user.uid).on('value', snapshot => {
+                    const userData = snapshot.val();
+                    if (userData) {
+                        currentUserRole = userData.role || 'user';
+                        canDelete = userData.canDelete || false;
+                        updateUIBasedOnRole();
+                    } else {
+                        // თუ მომხმარებლის მონაცემები არ არსებობს (ახალი რეგისტრაცია), ნაგულისხმევად მომხმარებელი
+                        // პირველი მომხმარებელი ხდება ადმინი.
+                        usersRef.child(user.uid).set({
+                            email: user.email,
+                            role: 'user', // ნაგულისხმევი
+                            canDelete: false // ნაგულისხმევი
+                        }).then(() => {
+                            // შევამოწმოთ თუ ეს პირველი მომხმარებელია
+                            usersRef.once('value').then(allUsersSnapshot => {
+                                if (allUsersSnapshot.numChildren() === 1) {
+                                    // თუ ის ერთადერთი მომხმარებელია, გახადე ადმინი
+                                    usersRef.child(user.uid).update({ role: 'admin', canDelete: true })
+                                        .then(() => {
+                                            currentUserRole = 'admin';
+                                            canDelete = true;
+                                            updateUIBasedOnRole();
+                                            showNotification('თქვენ ხართ პირველი მომხმარებელი. დაინიშნეთ როგორც ადმინი!', 'success');
+                                        })
+                                        .catch(err => {
+                                            console.error("Failed to set first user as admin:", err);
+                                            showNotification('შეცდომა პირველი მომხმარებლის ადმინად დანიშვნისას.', 'error');
+                                        });
+                                } else {
+                                    currentUserRole = 'user';
+                                    canDelete = false;
+                                    updateUIBasedOnRole();
+                                }
+                            });
+                        }).catch(err => {
+                            console.error("Failed to initialize user data:", err);
+                            showNotification('შეცდომა მომხმარებლის მონაცემების ინიციალიზაციისას.', 'error');
+                        });
+                    }
+                });
+
+                listenForFirebaseChanges(); // მონაცემების მოსმენა შესვლის შემდეგ
+                populateCourierFilter(); // კურიერების ფილტრის განახლება
+            } else {
+                // მომხმარებელი გამოსულია
+                currentUser = null;
+                currentUserRole = null;
+                canDelete = false;
+                document.getElementById('authContainer').style.display = 'block';
+                document.getElementById('mainContent').style.display = 'none';
+                // Stop listening to Firebase changes if no user
+                ordersRef.off('value'); 
+                usersRef.off('value'); // Stop listening to user data
+            }
         });
+
+        function updateUIBasedOnRole() {
+            // ადმინისთვის მომხმარებლების მართვის ღილაკის ჩვენება
+            if (currentUserRole === 'admin') {
+                document.getElementById('userManagementBtn').style.display = 'inline-block';
+                document.getElementById('clearDataBtn').style.display = 'inline-block'; // ადმინს შეუძლია მონაცემების წაშლა
+            } else {
+                document.getElementById('userManagementBtn').style.display = 'none';
+                document.getElementById('userManagementSection').style.display = 'none'; // დავმალოთ ადმინ პანელი თუ არ არის ადმინი
+                document.getElementById('clearDataBtn').style.display = 'none'; // დამალეთ წაშლის ღილაკი
+            }
+            applyFilters(); // ხელახლა გამოიტანოს ცხრილი, რადგან წაშლის ღილაკის ხილვადობა იცვლება
+        }
+
+        // შესვლა
+        function handleLogin() {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            auth.signInWithEmailAndPassword(email, password)
+                .then(() => {
+                    document.getElementById('authError').textContent = '';
+                    showNotification('წარმატებით შეხვედით სისტემაში!', 'success');
+                })
+                .catch(error => {
+                    document.getElementById('authError').textContent = 'შეცდომა: ' + error.message;
+                    showNotification('შესვლა ვერ მოხერხდა: ' + error.message, 'error');
+                });
+        }
+
+        // გასვლა
+        function handleLogout() {
+            auth.signOut()
+                .then(() => {
+                    showNotification('წარმატებით გამოხვედით სისტემიდან!', 'success');
+                })
+                .catch(error => {
+                    showNotification('გასვლა ვერ მოხერხდა: ' + error.message, 'error');
+                });
+        }
+
+        // ახალი მომხმარებლის შექმნა (მხოლოდ ადმინისთვის)
+        function createUser() {
+            if (currentUserRole !== 'admin') {
+                showNotification('თქვენ არ გაქვთ ახალი მომხმარებლების შექმნის ნებართვა.', 'error');
+                return;
+            }
+
+            const email = document.getElementById('newUserEmail').value;
+            const password = document.getElementById('newUserPassword').value;
+
+            if (!email || !password) {
+                showNotification('გთხოვთ შეავსოთ ელ-ფოსტა და პაროლი.', 'error');
+                return;
+            }
+            if (password.length < 6) {
+                showNotification('პაროლი უნდა იყოს მინიმუმ 6 სიმბოლო.', 'error');
+                return;
+            }
+
+            auth.createUserWithEmailAndPassword(email, password)
+                .then((userCredential) => {
+                    // მომხმარებელი შეიქმნა Firebase Auth-ში, ახლა შევქმნათ ჩანაწერი Realtime Database-ში
+                    return usersRef.child(userCredential.user.uid).set({
+                        email: email,
+                        role: 'user', // ნაგულისხმევი როლი
+                        canDelete: false // ნაგულისხმევი ნებართვა
+                    });
+                })
+                .then(() => {
+                    showNotification(`მომხმარებელი ${email} წარმატებით შეიქმნა!`, 'success');
+                    document.getElementById('newUserEmail').value = '';
+                    document.getElementById('newUserPassword').value = '';
+                })
+                .catch(error => {
+                    showNotification('მომხმარებლის შექმნა ვერ მოხერხდა: ' + error.message, 'error');
+                });
+        }
+
+        // მომხმარებლების სიის გამოტანა (ადმინისთვის)
+        function renderUserList(users) {
+            const userListElement = document.getElementById('userList');
+            userListElement.innerHTML = ''; // გასუფთავება
+            
+            if (Object.keys(users).length === 0) {
+                userListElement.innerHTML = '<li>მომხმარებლები არ მოიძებნა.</li>';
+                return;
+            }
+
+            for (const uid in users) {
+                const user = users[uid];
+                const li = document.createElement('li');
+                li.innerHTML = `
+                    <div class="user-details">
+                        <span>${user.email}</span> (როლი: ${user.role})
+                    </div>
+                    <div class="permission-toggle">
+                        <label for="canDelete-${uid}">წაშლის ნებართვა:</label>
+                        <label class="switch">
+                            <input type="checkbox" id="canDelete-${uid}" ${user.canDelete ? 'checked' : ''} 
+                                onclick="toggleDeletePermission('${uid}', this.checked)"
+                                ${currentUserRole !== 'admin' || currentUser.uid === uid ? 'disabled' : ''}> <span class="slider"></span>
+                        </label>
+                    </div>
+                `;
+                userListElement.appendChild(li);
+            }
+        }
+
+        // წაშლის ნებართვის გადართვა (მხოლოდ ადმინისთვის)
+        function toggleDeletePermission(uid, newPermission) {
+            if (currentUserRole !== 'admin') {
+                showNotification('თქვენ არ გაქვთ ნებართვების შეცვლის უფლება.', 'error');
+                return;
+            }
+            if (currentUser.uid === uid) {
+                showNotification('თქვენ არ შეგიძლიათ საკუთარი თავისთვის წაშლის ნებართვის შეცვლა.', 'error');
+                return;
+            }
+
+            usersRef.child(uid).update({ canDelete: newPermission })
+                .then(() => {
+                    showNotification(`მომხმარებლის ${uid} წაშლის ნებართვა განახლდა: ${newPermission ? 'ჩართულია' : 'გამორთულია'}`, 'success');
+                })
+                .catch(error => {
+                    showNotification('ნებართვის განახლება ვერ მოხერხდა: ' + error.message, 'error');
+                });
+        }
 
         function updateSyncIndicator(status, message) {
             const indicator = document.getElementById('syncIndicator');
@@ -551,20 +984,19 @@
             statusText.textContent = message;
         }
 
-        // Listen for changes in Firebase Realtime Database
+        // Load data from Firebase on page load and listen for changes
         function listenForFirebaseChanges() {
             updateSyncIndicator('syncing', 'სინქრონიზება...');
             ordersRef.on('value', (snapshot) => {
                 const firebaseData = snapshot.val();
                 if (firebaseData) {
-                    // Convert Firebase object to array of objects
                     data = Object.values(firebaseData);
                     populateCourierFilter();
                     applyFilters();
                     updateStats();
                     updateSyncIndicator('', 'სინქრონიზებული');
                 } else {
-                    data = []; // No data in Firebase
+                    data = [];
                     populateCourierFilter();
                     applyFilters();
                     updateStats();
@@ -574,6 +1006,19 @@
                 console.error("Firebase Read Failed:", error);
                 updateSyncIndicator('error', 'სინქრონიზაციის შეცდომა');
                 showNotification('Firebase-დან მონაცემების ჩატვირთვა ვერ მოხერხდა.', 'error');
+            });
+            
+            // მომხმარებლების სიის მოსმენა ადმინ პანელისთვის
+            usersRef.on('value', (snapshot) => {
+                const firebaseUsers = snapshot.val();
+                if (firebaseUsers) {
+                    renderUserList(firebaseUsers);
+                } else {
+                    renderUserList({});
+                }
+            }, (error) => {
+                console.error("Firebase Users Read Failed:", error);
+                showNotification('მომხმარებლების ჩატვირთვა ვერ მოხერხდა.', 'error');
             });
         }
 
@@ -605,14 +1050,14 @@
 
         // Process data and upload to Firebase
         function processAndUploadData(jsonData) {
+            // წინა მონაცემების სრულად ჩანაცვლება
             const newData = {};
-            jsonData.forEach((row, index) => {
+            jsonData.forEach((row) => {
                 // Firebase-ში თითოეული ჩანაწერისთვის უნიკალური ID-ის გენერირება
-                const newRef = ordersRef.push(); 
-                const id = newRef.key; // Firebase-ის მიერ გენერირებული ID
+                const id = ordersRef.push().key; 
                 
                 newData[id] = {
-                    id: id, // შევინახოთ ID ობიექტშიც
+                    id: id, 
                     order: String(row['შეკვეთა'] || row['Order'] || '').trim(),
                     receiver: String(row['მიმღები'] || row['Receiver'] || '').trim(),
                     courier: String(row['კურიერი'] || row['Courier'] || '').trim(),
@@ -651,6 +1096,17 @@
             const tbody = document.getElementById('tableBody');
             const header = document.getElementById('tableHeader');
             
+            // დამალეთ მომხმარებლების მართვის სექცია თუ სხვა ხედში ვართ
+            if (currentView !== 'userManagement') {
+                document.getElementById('userManagementSection').style.display = 'none';
+                document.getElementById('dashboardHistorySections').style.display = 'block';
+            } else {
+                document.getElementById('userManagementSection').style.display = 'block';
+                document.getElementById('dashboardHistorySections').style.display = 'none';
+                return; // არ გამოვაჩინოთ ცხრილი მომხმარებლების მართვის ხედში
+            }
+
+
             if (currentView === 'history') {
                 header.innerHTML = `
                     <th>შეკვეთა</th>
@@ -707,6 +1163,12 @@
         }
 
         function toggleStatus(id) {
+            // შევამოწმოთ მომხმარებლის სტატუსის განახლების ნებართვა (ყველას შეუძლია შეცვლა)
+            if (!currentUser) {
+                showNotification('გთხოვთ, შეხვიდეთ სისტემაში.', 'error');
+                return;
+            }
+
             const itemRef = database.ref('orders/' + id); // Get reference to the specific item in Firebase
             itemRef.once('value').then(snapshot => {
                 const item = snapshot.val();
@@ -747,7 +1209,16 @@
             currentView = view;
             document.querySelectorAll('.view-btn').forEach(btn => btn.classList.remove('active'));
             document.querySelector(`.view-toggle .view-btn[onclick="switchView('${view}')"]`).classList.add('active');
-            applyFilters();
+            
+            // დავმალოთ/გამოვაჩინოთ სექციები ხედის მიხედვით
+            if (view === 'userManagement') {
+                document.getElementById('userManagementSection').style.display = 'block';
+                document.getElementById('dashboardHistorySections').style.display = 'none';
+            } else {
+                document.getElementById('userManagementSection').style.display = 'none';
+                document.getElementById('dashboardHistorySections').style.display = 'block';
+                applyFilters(); // ხელახლა გაფილტროს და გამოიტანოს ცხრილი
+            }
         }
 
         function updateStats() {
@@ -808,6 +1279,11 @@
         }
 
         function clearAllData() {
+            if (!currentUser || !canDelete) { // შეამოწმეთ წაშლის ნებართვა
+                showNotification('თქვენ არ გაქვთ მონაცემების წაშლის ნებართვა.', 'error');
+                return;
+            }
+
             if (confirm('ნამდვილად გსურთ ყველა მონაცემის წაშლა? ეს ქმედება შეუქცევადია. ეს წაშლის მონაცემებს ყველა დაკავშირებულ მოწყობილობაზე!')) {
                 updateSyncIndicator('syncing', 'მონაცემების წაშლა...');
                 ordersRef.remove()
@@ -819,7 +1295,7 @@
                     .catch(error => {
                         console.error("Firebase Delete Failed:", error);
                         updateSyncIndicator('error', 'მონაცემების წაშლის შეცდომა');
-                        showNotification('მონაცემების წაშლა ვერ მოხერხდა.', 'error');
+                        showNotification('მონაცემების წაშლა ვერ მოხერხდა: ' + error.message, 'error');
                     });
             }
         }
