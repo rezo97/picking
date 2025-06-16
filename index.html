@@ -3,47 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>შეკვეთების მართვის სისტემა (Firebase)</title>
+    <title>შეკვეთების მართვის სისტემა (გაუმჯობესებული)</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
     
     <style>
         :root {
-            /* Light Mode Colors */
             --primary-color: #4285F4; /* Google Blue */
             --primary-dark-color: #1A73E8;
             --accent-color: #34A853; /* Google Green */
             --accent-dark-color: #2E8B49;
             --warning-color: #FBBC05; /* Google Yellow */
             --error-color: #EA4335; /* Google Red */
-            --text-color: #202124; /* Dark grey for primary text */
-            --light-text-color: #5F6368; /* Medium grey for secondary text */
-            --background-light: #F8F9FA; /* Lightest background */
-            --surface-color: #FFFFFF; /* Card/Container background */
+            --text-color: #202124; 
+            --light-text-color: #5F6368;
+            --background-light: #F8F9FA; 
+            --surface-color: #FFFFFF; 
             --border-color: #DADCE0;
             --shadow-1: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
             --shadow-2: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
             --shadow-3: 0 10px 20px rgba(0,0,0,0.19), 0 6px 6px rgba(0,0,0,0.23);
 
-            /* Dark Mode Colors (will be overridden by .dark-mode class) */
-            --dark-primary-color: #8AB4F8; /* Lighter blue for dark mode */
+            --dark-primary-color: #8AB4F8; 
             --dark-primary-dark-color: #AECBFA;
             --dark-accent-color: #81C995;
             --dark-accent-dark-color: #6AA87A;
             --dark-warning-color: #FDD663;
             --dark-error-color: #F28B82;
-            --dark-text-color: #E8EAED; /* Light grey for primary text */
-            --dark-light-text-color: #BDC1C6; /* Medium light grey for secondary text */
-            --dark-background-light: #202124; /* Darkest background */
-            --dark-surface-color: #2F3034; /* Dark card/container background */
+            --dark-text-color: #E8EAED; 
+            --dark-light-text-color: #BDC1C6; 
+            --dark-background-light: #202124; 
+            --dark-surface-color: #2F3034; 
             --dark-border-color: #5F6368;
         }
 
-        /* Dark Mode overrides */
         body.dark-mode {
             background-color: var(--dark-background-light);
             color: var(--dark-text-color);
@@ -51,7 +47,7 @@
 
         body.dark-mode .card {
             background-color: var(--dark-surface-color);
-            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.4); /* Darker shadow for dark mode */
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.4); 
         }
 
         body.dark-mode .header h1,
@@ -60,7 +56,7 @@
             color: var(--dark-text-color);
         }
 
-        body.dark-mode .light-text-color, /* For specific elements that use this */
+        body.dark-mode .light-text-color,
         body.dark-mode .stat-card h4,
         body.dark-mode #fileName,
         body.dark-mode .date-column,
@@ -68,13 +64,11 @@
             color: var(--dark-light-text-color);
         }
 
-        /* NEW: Dark mode for filter labels */
         body.dark-mode .filter-group label,
         body.dark-mode .address-toggle-group label {
-            color: var(--dark-text-color); /* Make labels brighter in dark mode */
-            font-weight: 700; /* Ensure boldness */
+            color: var(--dark-text-color); 
+            font-weight: 700; 
         }
-
 
         body.dark-mode .sync-indicator {
             background-color: var(--dark-accent-color);
@@ -97,7 +91,7 @@
             background-color: var(--dark-error-color);
         }
         body.dark-mode .button-danger:hover {
-            background-color: #CF6679; /* Darker red for dark mode hover */
+            background-color: #CF6679; 
         }
 
         body.dark-mode .view-toggle {
@@ -108,31 +102,31 @@
         }
         body.dark-mode .view-btn.active {
             background-color: var(--dark-primary-color);
-            color: var(--dark-text-color); /* Use dark text color for active button */
+            color: var(--dark-text-color); 
         }
         body.dark-mode .view-btn:hover:not(.active) {
-            background-color: #3C4043; /* Slightly lighter dark background for hover */
+            background-color: #3C4043; 
             color: var(--dark-text-color);
         }
         
         body.dark-mode .filter-group input, 
         body.dark-mode .filter-group select {
-            background-color: #3C4043; /* Darker input background */
+            background-color: #3C4043; 
             border-color: var(--dark-border-color);
             color: var(--dark-text-color);
         }
         body.dark-mode .filter-group input:focus, 
         body.dark-mode .filter-group select:focus {
             border-color: var(--dark-primary-color);
-            box-shadow: 0 0 0 2px rgba(138, 180, 248, 0.2); /* Lighter focus ring */
+            box-shadow: 0 0 0 2px rgba(138, 180, 248, 0.2); 
         }
 
         body.dark-mode th {
-            background-color: #3C4043; /* Darker header background */
+            background-color: #3C4043; 
         }
 
         body.dark-mode tbody tr:hover {
-            background-color: rgba(138, 180, 248, 0.1); /* Lighter blue hover for dark mode */
+            background-color: rgba(138, 180, 248, 0.1); 
         }
 
         body.dark-mode .status-collect {
@@ -157,6 +151,73 @@
         body.dark-mode .notification.error {
             background-color: var(--dark-error-color);
         }
+
+        /* Status Change Animation */
+        .flash-green {
+            animation: flashGreen 0.5s ease-out;
+        }
+        @keyframes flashGreen {
+            0% { background-color: rgba(52, 168, 83, 0.3); } /* Start with a light green flash */
+            100% { background-color: transparent; }
+        }
+        .flash-yellow {
+            animation: flashYellow 0.5s ease-out;
+        }
+        @keyframes flashYellow {
+            0% { background-color: rgba(251, 188, 5, 0.3); } /* Start with a light yellow flash */
+            100% { background-color: transparent; }
+        }
+
+        .status-change-dialog {
+            display: none; /* Hidden by default */
+            position: fixed;
+            z-index: 1001;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.6);
+            align-items: center;
+            justify-content: center;
+        }
+
+        .status-change-dialog.show-dialog {
+            display: flex;
+        }
+
+        .status-dialog-content {
+            background-color: var(--surface-color);
+            margin: auto;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: var(--shadow-3);
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+            color: var(--text-color);
+        }
+
+        .status-dialog-content.dark-mode {
+            background-color: var(--dark-surface-color);
+            color: var(--dark-text-color);
+        }
+
+        .status-dialog-content h3 {
+            margin-bottom: 20px;
+            font-size: 22px;
+            font-weight: 500;
+        }
+
+        .status-dialog-content p {
+            margin-bottom: 30px;
+            font-size: 16px;
+        }
+
+        .status-dialog-actions button {
+            margin: 0 10px;
+            width: 120px;
+        }
         
         /* New styles for address column toggle */
         .address-toggle-group {
@@ -167,9 +228,9 @@
         }
 
         .address-toggle-group label {
-            font-weight: 700; /* Make it bold */
-            color: var(--light-text-color); /* Kept same as other labels for light mode */
-            font-size: 15px; /* Slightly larger */
+            font-weight: 700; 
+            color: var(--light-text-color); 
+            font-size: 15px; 
             cursor: pointer;
         }
 
@@ -192,7 +253,7 @@
             min-height: 100vh;
             color: var(--text-color);
             line-height: 1.6;
-            transition: background-color 0.3s ease, color 0.3s ease; /* Smooth transition for theme change */
+            transition: background-color 0.3s ease, color 0.3s ease; 
         }
 
         .container {
@@ -209,7 +270,7 @@
             border-radius: 8px;
             box-shadow: var(--shadow-1);
             padding: 24px;
-            transition: background-color 0.3s ease, box-shadow 0.3s ease; /* Smooth transition for theme change */
+            transition: background-color 0.3s ease, box-shadow 0.3s ease; 
         }
 
         /* Header */
@@ -236,16 +297,16 @@
             font-size: 13px;
             font-weight: 500;
             color: var(--surface-color);
-            background-color: var(--accent-color); /* Default: Synced (Green) */
+            background-color: var(--accent-color); 
             transition: background-color 0.3s ease, color 0.3s ease;
         }
 
         .sync-indicator.syncing {
-            background-color: var(--warning-color); /* Syncing (Yellow) */
+            background-color: var(--warning-color); 
         }
 
         .sync-indicator.error {
-            background-color: var(--error-color); /* Error (Red) */
+            background-color: var(--error-color); 
         }
 
         .sync-dot {
@@ -307,7 +368,7 @@
         }
 
         .button-danger:hover {
-            background-color: #C53929; /* Darker red */
+            background-color: #C53929; 
         }
         
         .file-input-wrapper {
@@ -321,8 +382,6 @@
         }
 
         .file-input-label {
-            /* Using @extend is not native CSS, but indicates shared styles */
-            /* In real CSS, you'd copy these properties or use a preprocessor */
             padding: 10px 20px;
             border: none;
             border-radius: 4px;
@@ -392,8 +451,6 @@
         }
 
         .stat-card {
-            /* Using @extend is not native CSS, but indicates shared styles */
-            /* In real CSS, you'd copy these properties or use a preprocessor */
             background-color: var(--surface-color);
             border-radius: 8px;
             box-shadow: var(--shadow-1);
@@ -423,8 +480,6 @@
 
         /* Filters */
         .filters {
-            /* Using @extend is not native CSS, but indicates shared styles */
-            /* In real CSS, you'd copy these properties or use a preprocessor */
             background-color: var(--surface-color);
             border-radius: 8px;
             box-shadow: var(--shadow-1);
@@ -452,10 +507,10 @@
         }
 
         .filter-group label {
-            font-weight: 700; /* Make it bold */
+            font-weight: 700; 
             margin-bottom: 8px;
-            color: var(--light-text-color); /* Kept same as other labels for light mode */
-            font-size: 15px; /* Slightly larger */
+            color: var(--light-text-color); 
+            font-size: 15px; 
         }
 
         .filter-group input, 
@@ -467,19 +522,17 @@
             color: var(--text-color);
             background-color: var(--surface-color);
             transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.3s ease, color 0.3s ease;
-            min-height: 40px; /* Ensure consistent height */
+            min-height: 40px; 
         }
 
         .filter-group input:focus, 
         .filter-group select:focus {
             outline: none;
             border-color: var(--primary-color);
-            box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.2); /* Focus ring */
+            box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.2); 
         }
 
         .clear-filters {
-            /* Using @extend is not native CSS, but indicates shared styles */
-            /* In real CSS, you'd copy these properties or use a preprocessor */
             padding: 10px 20px;
             border: none;
             border-radius: 4px;
@@ -494,7 +547,7 @@
 
             background-color: var(--error-color);
             color: white;
-            margin-top: 10px; /* Space from filters */
+            margin-top: 10px; 
         }
         .clear-filters:hover {
             background-color: #C53929;
@@ -502,13 +555,11 @@
 
         /* Table */
         .table-container {
-            /* Using @extend is not native CSS, but indicates shared styles */
-            /* In real CSS, you'd copy these properties or use a preprocessor */
             background-color: var(--surface-color);
             border-radius: 8px;
             box-shadow: var(--shadow-1);
-            padding: 0; /* Table content will have its own padding */
-            overflow: hidden; /* For rounded corners */
+            padding: 0; 
+            overflow: hidden; 
             transition: background-color 0.3s ease, box-shadow 0.3s ease;
         }
 
@@ -540,6 +591,15 @@
             top: 0;
             z-index: 10;
             transition: background-color 0.3s ease, color 0.3s ease;
+            cursor: pointer; /* Added for sorting */
+        }
+        
+        th.sorted-asc::after {
+            content: ' \25B2'; /* Up arrow */
+        }
+
+        th.sorted-desc::after {
+            content: ' \25BC'; /* Down arrow */
         }
 
         tbody tr:last-child td {
@@ -547,7 +607,7 @@
         }
 
         tbody tr:hover {
-            background-color: rgba(66, 133, 244, 0.05); /* Light blue hover */
+            background-color: rgba(66, 133, 244, 0.05); 
         }
 
         /* Status Badge */
@@ -568,7 +628,7 @@
 
         .status-collect {
             background-color: var(--warning-color);
-            color: var(--text-color); /* Dark text for yellow background */
+            color: var(--text-color); 
         }
 
         .status-collected {
@@ -609,7 +669,7 @@
             padding: 14px 20px;
             border-radius: 8px;
             z-index: 1000;
-            transform: translateX(calc(100% + 20px)); /* Hidden by default */
+            transform: translateX(calc(100% + 20px)); 
             transition: transform 0.3s ease-out, opacity 0.3s ease-out;
             opacity: 0;
             box-shadow: var(--shadow-2);
@@ -685,6 +745,15 @@
                 flex-direction: column;
                 align-items: flex-start;
             }
+            .status-dialog-content {
+                width: 95%;
+                padding: 20px;
+            }
+            .status-dialog-actions button {
+                width: auto;
+                flex-grow: 1;
+                margin: 5px;
+            }
         }
     </style>
 </head>
@@ -702,14 +771,17 @@
                 <div class="file-input-wrapper">
                     <input type="file" id="fileInput" class="file-input" accept=".xlsx,.xls" />
                     <label for="fileInput" class="file-input-label">
-                        <i class="material-icons">upload_file</i> Excel ფაილის ატვირთვა
+                        <i class="material-icons">upload_file</i>
+                        Excel ფაილის ატვირთვა
                     </label>
                 </div>
                 <button class="button button-danger clear-data-btn" onclick="promptForClearData()">
-                    <i class="material-icons">delete_forever</i> მონაცემების წაშლა
+                    <i class="material-icons">delete_forever</i>
+                    მონაცემების წაშლა
                 </button>
                 <button id="darkModeToggle" class="button button-primary" onclick="toggleDarkMode()">
-                    <i class="material-icons" id="darkModeIcon">dark_mode</i> ბნელი რეჟიმი
+                    <i class="material-icons" id="darkModeIcon">dark_mode</i>
+                    ბნელი რეჟიმი
                 </button>
                 <span id="fileName"></span>
             </div>
@@ -779,12 +851,13 @@
                 <table id="dataTable">
                     <thead>
                         <tr id="tableHeader">
-                            <th>შეკვეთა</th>
-                            <th>მიმღები</th>
-                            <th>მისამართი</th> <th>კურიერი</th>
-                            <th>თარო</th>
-                            <th>სტატუსი</th>
-                        </tr>
+                            <th data-sort-key="order">შეკვეთა</th>
+                            <th data-sort-key="receiver">მიმღები</th>
+                            <th data-sort-key="address" class="address-column-header">მისამართი</th>
+                            <th data-sort-key="courier">კურიერი</th>
+                            <th data-sort-key="type">ტემპი</th>
+                            <th data-sort-key="status">სტატუსი</th>
+                            </tr>
                     </thead>
                     <tbody id="tableBody">
                         <tr>
@@ -801,8 +874,18 @@
 
     <div id="notification" class="notification"></div>
 
+    <div id="statusChangeDialog" class="status-change-dialog">
+        <div class="status-dialog-content">
+            <h3 id="dialogTitle"></h3>
+            <p id="dialogMessage"></p>
+            <div class="status-dialog-actions">
+                <button class="button button-danger" id="cancelStatusChange">გაუქმება</button>
+                <button class="button button-primary" id="confirmStatusChange">დადასტურება</button>
+            </div>
+        </div>
+    </div>
+
     <script>
-        // *** Firebase Configuration - ეს თქვენი Firebase პროექტის მონაცემებია ***
         const firebaseConfig = {
             apiKey: "AIzaSyAX83Mj3ZPlhTC1PGlwpP6nNPc9INj_iAE",
             authDomain: "picking-2da5d.firebaseapp.com",
@@ -813,7 +896,6 @@
             appId: "1:985054920430:web:2e49cd2b1ebbab9ba23dff",
             measurementId: "G-ZEJHW847HT" 
         };
-        // *** დასრულდა Firebase კონფიგურაციის ადგილი ***
 
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
@@ -823,11 +905,27 @@
         let filteredData = [];
         let currentView = 'dashboard';
         let showAddressColumn = true; 
-        
-        // --- Dark Mode Logic ---
+        let currentSortKey = null;
+        let currentSortOrder = 'asc'; // 'asc' or 'desc'
+
+        // DOM elements
         const darkModeToggleBtn = document.getElementById('darkModeToggle');
         const darkModeIcon = document.getElementById('darkModeIcon');
+        const toggleAddressCheckbox = document.getElementById('toggleAddressColumn');
+        const tableContainer = document.getElementById('tableContainer');
+        const filterOrderInput = document.getElementById('filterOrder');
+        const filterReceiverInput = document.getElementById('filterReceiver');
+        const filterCourierSelect = document.getElementById('filterCourier');
+        const filterStatusSelect = document.getElementById('filterStatus');
+        const statusChangeDialog = document.getElementById('statusChangeDialog');
+        const dialogTitle = document.getElementById('dialogTitle');
+        const dialogMessage = document.getElementById('dialogMessage');
+        const confirmStatusChangeBtn = document.getElementById('confirmStatusChange');
+        const cancelStatusChangeBtn = document.getElementById('cancelStatusChange');
 
+        let pendingStatusChangeId = null; // Store ID for status change confirmation
+
+        // --- Dark Mode Logic ---
         function setDarkMode(isDark) {
             if (isDark) {
                 document.body.classList.add('dark-mode');
@@ -840,6 +938,12 @@
                 darkModeToggleBtn.querySelector('span').textContent = 'ბნელი რეჟიმი'; 
                 localStorage.setItem('theme', 'light');
             }
+            // Ensure dialog also updates its theme
+            if (document.body.classList.contains('dark-mode')) {
+                statusChangeDialog.querySelector('.status-dialog-content').classList.add('dark-mode');
+            } else {
+                statusChangeDialog.querySelector('.status-dialog-content').classList.remove('dark-mode');
+            }
         }
 
         function toggleDarkMode() {
@@ -848,9 +952,6 @@
         }
 
         // --- Address Column Toggle Logic ---
-        const toggleAddressCheckbox = document.getElementById('toggleAddressColumn');
-        const tableContainer = document.getElementById('tableContainer');
-
         function updateAddressColumnVisibility() {
             showAddressColumn = toggleAddressCheckbox.checked;
             if (showAddressColumn) {
@@ -862,13 +963,38 @@
             localStorage.setItem('showAddressColumn', showAddressColumn); 
         }
 
+        // --- Filter State Persistence ---
+        function saveFilterState() {
+            const filters = {
+                order: filterOrderInput.value,
+                receiver: filterReceiverInput.value,
+                courier: filterCourierSelect.value,
+                status: filterStatusSelect.value,
+                view: currentView
+            };
+            localStorage.setItem('filterState', JSON.stringify(filters));
+        }
+
+        function loadFilterState() {
+            const savedFilters = localStorage.getItem('filterState');
+            if (savedFilters) {
+                const filters = JSON.parse(savedFilters);
+                filterOrderInput.value = filters.order || '';
+                filterReceiverInput.value = filters.receiver || '';
+                filterCourierSelect.value = filters.courier || ''; // Will be set after populateCourierFilter
+                filterStatusSelect.value = filters.status || '';
+                
+                // Set view
+                if (filters.view && filters.view !== currentView) {
+                    switchView(filters.view, false); // Don't save to local storage again
+                }
+            }
+        }
+
+        // --- Initial Load ---
         window.addEventListener('DOMContentLoaded', () => {
             const savedTheme = localStorage.getItem('theme');
-            if (savedTheme === 'dark') {
-                setDarkMode(true);
-            } else {
-                setDarkMode(false); 
-            }
+            setDarkMode(savedTheme === 'dark');
 
             const savedAddressColumnPreference = localStorage.getItem('showAddressColumn');
             if (savedAddressColumnPreference !== null) {
@@ -879,16 +1005,18 @@
                 toggleAddressCheckbox.checked = true;
             }
             updateAddressColumnVisibility(); 
-        });
 
-        toggleAddressCheckbox.addEventListener('change', updateAddressColumnVisibility);
-        // --- End Address Column Toggle Logic ---
+            // Initialize filter event listeners
+            filterOrderInput.addEventListener('input', () => { applyFilters(); saveFilterState(); });
+            filterReceiverInput.addEventListener('input', () => { applyFilters(); saveFilterState(); });
+            filterCourierSelect.addEventListener('change', () => { applyFilters(); saveFilterState(); });
+            filterStatusSelect.addEventListener('change', () => { applyFilters(); saveFilterState(); });
+            toggleAddressCheckbox.addEventListener('change', updateAddressColumnVisibility);
 
-
-        window.addEventListener('load', function() {
             listenForFirebaseChanges();
         });
 
+        // --- Firebase Sync Indicator ---
         function updateSyncIndicator(status, message) {
             const indicator = document.getElementById('syncIndicator');
             const statusText = document.getElementById('syncStatus');
@@ -897,6 +1025,7 @@
             statusText.textContent = message;
         }
 
+        // --- Firebase Data Listener ---
         function listenForFirebaseChanges() {
             updateSyncIndicator('syncing', 'სინქრონიზება...');
             ordersRef.on('value', (snapshot) => {
@@ -904,7 +1033,7 @@
                 if (firebaseData) {
                     data = Object.values(firebaseData);
                     populateCourierFilter();
-                    // IMPORTANT FIX: Call applyFilters here to re-apply filters after data update
+                    loadFilterState(); // Load filters after data is available and courier options are populated
                     applyFilters(); 
                     updateStats();
                     updateSyncIndicator('', 'სინქრონიზებული');
@@ -922,6 +1051,7 @@
             });
         }
 
+        // --- Excel File Upload ---
         document.getElementById('fileInput').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (!file) return;
@@ -959,7 +1089,7 @@
                     receiver: String(row['მიმღები'] || row['Receiver'] || '').trim(),
                     address: String(row['მისამართი'] || row['Address'] || '').trim(), 
                     courier: String(row['კურიერი'] || row['Courier'] || '').trim(),
-                    type: String(row['თარო'] || row['Type'] || '').trim(),
+                    type: String(row['ტემპი'] || row['Type'] || '').trim(),
                     status: 'ასაგროვებელი',
                     statusChangedDate: null
                 };
@@ -977,42 +1107,96 @@
                 });
         }
 
+        // --- Filter Population & Logic ---
         function populateCourierFilter() {
             const couriers = [...new Set(data.map(item => item.courier))].filter(Boolean).sort();
-            const courierSelect = document.getElementById('filterCourier');
-            const currentCourierFilter = courierSelect.value; // Save current selection
+            const currentCourierFilter = filterCourierSelect.value; 
 
-            courierSelect.innerHTML = '<option value="">ყველა კურიერი</option>';
+            filterCourierSelect.innerHTML = '<option value="">ყველა კურიერი</option>';
             couriers.forEach(courier => {
                 const option = document.createElement('option');
                 option.value = courier;
                 option.textContent = courier;
-                courierSelect.appendChild(option);
+                filterCourierSelect.appendChild(option);
             });
-            courierSelect.value = currentCourierFilter; // Restore previous selection
+            filterCourierSelect.value = currentCourierFilter; 
         }
 
+        function applyFilters() {
+            const orderFilter = filterOrderInput.value.toLowerCase().trim();
+            const receiverFilter = filterReceiverInput.value.toLowerCase().trim();
+            const courierFilter = filterCourierSelect.value;
+            const statusFilter = filterStatusSelect.value;
+
+            let dataToFilter = [...data];
+            
+            if (currentView === 'dashboard') {
+                dataToFilter = data.filter(item => item.status === 'ასაგროვებელი');
+            }
+
+            filteredData = dataToFilter.filter(item => {
+                const orderMatch = !orderFilter || String(item.order).toLowerCase().includes(orderFilter);
+                const receiverMatch = !receiverFilter || String(item.receiver).toLowerCase().includes(receiverFilter);
+                const courierMatch = !courierFilter || item.courier === courierFilter;
+                
+                const statusMatch = currentView === 'dashboard' ? true : !statusFilter || item.status === statusFilter;
+
+                return orderMatch && receiverMatch && courierMatch && statusMatch;
+            });
+
+            applySorting(); // Apply sorting after filtering
+            renderTable();
+        }
+
+        function clearAllFilters() {
+            filterOrderInput.value = '';
+            filterReceiverInput.value = '';
+            filterCourierSelect.value = '';
+            filterStatusSelect.value = '';
+            saveFilterState(); // Save cleared state
+            applyFilters();
+        }
+
+        // --- Table Rendering (UPDATED for sorting) ---
         function renderTable() {
             const tbody = document.getElementById('tableBody');
-            const header = document.getElementById('tableHeader');
+            const headerRow = document.getElementById('tableHeader');
             
-            let headersHtml = `
-                <th>შეკვეთა</th>
-                <th>მიმღები</th>
-                <th class="address-column-header">მისამართი</th> 
-                <th>კურიერი</th>
-                <th>თარო</th>
-                <th>სტატუსი</th>
-            `;
+            // Clear existing sort indicators
+            headerRow.querySelectorAll('th').forEach(th => {
+                th.classList.remove('sorted-asc', 'sorted-desc');
+            });
 
+            // Recreate headers for history view
+            let headersHtml = `
+                <th data-sort-key="order">შეკვეთა</th>
+                <th data-sort-key="receiver">მიმღები</th>
+                <th data-sort-key="address" class="address-column-header">მისამართი</th> 
+                <th data-sort-key="courier">კურიერი</th>
+                <th data-sort-key="type">ტემპი</th>
+                <th data-sort-key="status">სტატუსი</th>
+            `;
             let colspan = 6; 
 
             if (currentView === 'history') {
-                headersHtml += `<th>შეცვლის თარიღი</th>`;
+                headersHtml += `<th data-sort-key="statusChangedDate">შეცვლის თარიღი</th>`;
                 colspan = 7;
             }
+            headerRow.innerHTML = headersHtml;
 
-            header.innerHTML = headersHtml;
+            // Add click listeners for sorting
+            headerRow.querySelectorAll('th').forEach(th => {
+                const sortKey = th.getAttribute('data-sort-key');
+                if (sortKey) {
+                    th.addEventListener('click', () => {
+                        handleSort(sortKey);
+                    });
+                    // Apply visual sort indicator if currently sorted by this column
+                    if (sortKey === currentSortKey) {
+                        th.classList.add(currentSortOrder === 'asc' ? 'sorted-asc' : 'sorted-desc');
+                    }
+                }
+            });
 
             if (filteredData.length === 0) {
                 const message = data.length === 0 ?
@@ -1034,12 +1218,11 @@
                     ? `<td class="date-column">${item.statusChangedDate}</td>` 
                     : currentView === 'history' ? '<td class="date-column">-</td>' : '';
                 
-                const statusCell = `<span class="status-badge ${statusClass}" onclick="toggleStatus('${item.id}')">${item.status}</span>`;
-                
+                const statusCell = `<span class="status-badge ${statusClass}" onclick="showStatusChangeDialog('${item.id}')">${item.status}</span>`;
                 const addressCell = `<td class="address-column-data">${item.address || ''}</td>`;
 
                 return `
-                    <tr>
+                    <tr id="order-row-${item.id}">
                         <td>${item.order}</td>
                         <td>${item.receiver}</td>
                         ${addressCell} 
@@ -1050,8 +1233,82 @@
                     </tr>
                 `;
             }).join('');
+
+            updateAddressColumnVisibility(); // Re-apply visibility after rendering
         }
 
+        // --- Sorting Logic ---
+        function handleSort(key) {
+            if (currentSortKey === key) {
+                currentSortOrder = currentSortOrder === 'asc' ? 'desc' : 'asc';
+            } else {
+                currentSortKey = key;
+                currentSortOrder = 'asc';
+            }
+            applySorting();
+            renderTable();
+        }
+
+        function applySorting() {
+            if (!currentSortKey) return;
+
+            filteredData.sort((a, b) => {
+                let valA = a[currentSortKey];
+                let valB = b[currentSortKey];
+
+                // Special handling for numerical sort if values are numbers
+                if (!isNaN(parseFloat(valA)) && isFinite(valA) && !isNaN(parseFloat(valB)) && isFinite(valB)) {
+                    valA = parseFloat(valA);
+                    valB = parseFloat(valB);
+                } else if (typeof valA === 'string') {
+                    valA = valA.toLowerCase();
+                    valB = valB.toLowerCase();
+                }
+
+                if (valA < valB) {
+                    return currentSortOrder === 'asc' ? -1 : 1;
+                }
+                if (valA > valB) {
+                    return currentSortOrder === 'asc' ? 1 : -1;
+                }
+                return 0;
+            });
+        }
+
+        // --- Status Change Confirmation Dialog ---
+        function showStatusChangeDialog(id) {
+            pendingStatusChangeId = id;
+            const item = data.find(d => d.id === id);
+            if (!item) return;
+
+            const newStatus = item.status === 'ასაგროვებელი' ? 'აგროვებული' : 'ასაგროვებელი';
+            dialogTitle.textContent = `სტატუსის შეცვლა: ${item.order}`;
+            dialogMessage.textContent = `ნამდვილად გსურთ შეკვეთის სტატუსის შეცვლა "${item.status}"-დან "${newStatus}"-ზე?`;
+            
+            // Set dark mode for dialog content if body is dark mode
+            if (document.body.classList.contains('dark-mode')) {
+                statusChangeDialog.querySelector('.status-dialog-content').classList.add('dark-mode');
+            } else {
+                statusChangeDialog.querySelector('.status-dialog-content').classList.remove('dark-mode');
+            }
+
+            statusChangeDialog.classList.add('show-dialog');
+        }
+
+        confirmStatusChangeBtn.addEventListener('click', () => {
+            if (pendingStatusChangeId) {
+                toggleStatus(pendingStatusChangeId);
+                pendingStatusChangeId = null;
+            }
+            statusChangeDialog.classList.remove('show-dialog');
+        });
+
+        cancelStatusChangeBtn.addEventListener('click', () => {
+            pendingStatusChangeId = null;
+            statusChangeDialog.classList.remove('show-dialog');
+        });
+
+        // Toggle Status function (now called from dialog confirmation)
         function toggleStatus(id) {
             const itemRef = database.ref('orders/' + id); 
             itemRef.once('value').then(snapshot => {
@@ -1073,9 +1330,22 @@
                         statusChangedDate: newStatusChangedDate
                     })
                     .then(() => {
-                        // Data will be re-rendered by the 'onValue' listener.
-                        // The 'onValue' listener now correctly calls applyFilters() to preserve filters.
                         updateSyncIndicator('', 'სინქრონიზებული');
+                        showNotification('სტატუსი წარმატებით განახლდა!');
+                        
+                        // Visual feedback (flash row)
+                        const row = document.getElementById(`order-row-${id}`);
+                        if (row) {
+                            if (newStatus === 'აგროვებული') {
+                                row.classList.add('flash-green');
+                            } else {
+                                row.classList.add('flash-yellow');
+                            }
+                            // Remove flash class after animation
+                            row.addEventListener('animationend', () => {
+                                row.classList.remove('flash-green', 'flash-yellow');
+                            }, { once: true });
+                        }
                     })
                     .catch(error => {
                         console.error("Firebase Update Failed:", error);
@@ -1089,13 +1359,23 @@
             });
         }
 
-        function switchView(view) {
+        // --- View Switching ---
+        function switchView(view, saveToLocal = true) {
             currentView = view;
             document.querySelectorAll('.view-btn').forEach(btn => btn.classList.remove('active'));
-            document.querySelector(`.view-toggle .view-btn[onclick="switchView('${view}')"]`).classList.add('active');
-            applyFilters();
+            document.querySelector(`.view-toggle .view-btn[onclick="switchView('${view}', true)"]`).classList.add('active'); // Update onclick to reflect saveToLocal
+            
+            // Reset sorting when switching views, or keep if that's desired behavior
+            currentSortKey = null;
+            currentSortOrder = 'asc';
+
+            if (saveToLocal) {
+                saveFilterState(); // Save the view change
+            }
+            applyFilters(); // Re-apply filters based on new view
         }
 
+        // --- Stats Update ---
         function updateStats() {
             const total = data.length;
             const toCollect = data.filter(item => item.status === 'ასაგროვებელი').length;
@@ -1106,44 +1386,7 @@
             document.getElementById('collectedOrders').textContent = collected;
         }
 
-        function applyFilters() {
-            const orderFilter = document.getElementById('filterOrder').value.toLowerCase().trim();
-            const receiverFilter = document.getElementById('filterReceiver').value.toLowerCase().trim();
-            const courierFilter = document.getElementById('filterCourier').value;
-            const statusFilter = document.getElementById('filterStatus').value;
-
-            let dataToFilter = [...data];
-            
-            if (currentView === 'dashboard') {
-                dataToFilter = data.filter(item => item.status === 'ასაგროვებელი');
-            }
-
-            filteredData = dataToFilter.filter(item => {
-                const orderMatch = !orderFilter || String(item.order).toLowerCase().includes(orderFilter);
-                const receiverMatch = !receiverFilter || String(item.receiver).toLowerCase().includes(receiverFilter);
-                const courierMatch = !courierFilter || item.courier === courierFilter;
-                
-                const statusMatch = currentView === 'dashboard' ? true : !statusFilter || item.status === statusFilter;
-
-                return orderMatch && receiverMatch && courierMatch && statusMatch;
-            });
-            renderTable();
-        }
-
-        // Filter event listeners
-        document.getElementById('filterOrder').addEventListener('input', applyFilters);
-        document.getElementById('filterReceiver').addEventListener('input', applyFilters);
-        document.getElementById('filterCourier').addEventListener('change', applyFilters);
-        document.getElementById('filterStatus').addEventListener('change', applyFilters);
-
-        function clearAllFilters() {
-            document.getElementById('filterOrder').value = '';
-            document.getElementById('filterReceiver').value = '';
-            document.getElementById('filterCourier').value = '';
-            document.getElementById('filterStatus').value = '';
-            applyFilters();
-        }
-
+        // --- Notification System ---
         function showNotification(message, type = 'success') {
             const notification = document.getElementById('notification');
             notification.textContent = message;
@@ -1153,6 +1396,7 @@
             }, 3000);
         }
 
+        // --- Admin Data Clear ---
         const ADMIN_CODE = "321321"; 
 
         function promptForClearData() {
