@@ -150,6 +150,27 @@
         body.dark-mode .notification.error {
             background-color: var(--dark-error-color);
         }
+        
+        /* New styles for address column toggle */
+        .address-toggle-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .address-toggle-group label {
+            font-weight: 500;
+            color: var(--light-text-color);
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        /* Hide specific table cells */
+        .hide-address .address-column-header,
+        .hide-address .address-column-data {
+            display: none;
+        }
 
         /* General styles, kept similar to previous Material Design update */
         * {
@@ -479,11 +500,9 @@
             background-color: var(--surface-color);
             border-radius: 8px;
             box-shadow: var(--shadow-1);
-            padding: 24px;
-            transition: background-color 0.3s ease, box-shadow 0.3s ease;
-
             padding: 0; /* Table content will have its own padding */
             overflow: hidden; /* For rounded corners */
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
         }
 
         .table-wrapper {
@@ -598,11 +617,6 @@
             background-color: var(--error-color);
         }
         
-        /* Utility for Material Design RGB colors */
-        /* Note: @extend is for preprocessors like SASS/LESS. For pure CSS, copy these properties. */
-        /* .button-primary, .view-btn.active { --primary-color-rgb: 66, 133, 244; } */
-
-
         /* Media Queries for responsiveness */
         @media (max-width: 768px) {
             .container {
@@ -628,13 +642,13 @@
 
             .file-input-wrapper, 
             .clear-data-btn,
-            #darkModeToggle { /* Include new button */
+            #darkModeToggle { 
                 width: 100%;
             }
             .file-input-label, 
             .clear-data-btn,
-            #darkModeToggle { /* Include new button */
-                justify-content: center; /* Center button text */
+            #darkModeToggle { 
+                justify-content: center; 
                 width: 100%;
             }
 
@@ -643,7 +657,7 @@
                 justify-content: stretch;
             }
             .view-btn {
-                flex: 1; /* Make buttons fill space */
+                flex: 1; 
                 text-align: center;
             }
 
@@ -656,9 +670,13 @@
             }
             
             .status-badge {
-                min-width: unset; /* Allow badge to shrink on small screens */
+                min-width: unset; 
                 padding: 6px 12px;
                 font-size: 12px;
+            }
+            .address-toggle-group {
+                flex-direction: column;
+                align-items: flex-start;
             }
         }
     </style>
@@ -740,26 +758,30 @@
                     </select>
                 </div>
             </div>
+            <div class="address-toggle-group">
+                <input type="checkbox" id="toggleAddressColumn" checked>
+                <label for="toggleAddressColumn">მისამართის სვეტის ჩვენება</label>
+            </div>
             <button class="button button-danger clear-filters" onclick="clearAllFilters()">
                 <i class="material-icons">filter_alt_off</i> ფილტრების გასუფთავება
             </button>
         </div>
 
-        <div class="table-container">
+        <div class="table-container" id="tableContainer">
             <div class="table-wrapper">
                 <table id="dataTable">
                     <thead>
                         <tr id="tableHeader">
                             <th>შეკვეთა</th>
                             <th>მიმღები</th>
-                            <th>კურიერი</th>
+                            <th>მისამართი</th> <th>კურიერი</th>
                             <th>ტემპი</th>
                             <th>სტატუსი</th>
                         </tr>
                     </thead>
                     <tbody id="tableBody">
                         <tr>
-                            <td colspan="5" class="empty-state">
+                            <td colspan="6" class="empty-state">
                                 <h3>მონაცემები ჯერ არ არის ატვირთული</h3>
                                 <p>Excel ფაილის ატვირთვისთვის გამოიყენეთ ზედა ღილაკი</p>
                             </td>
@@ -791,24 +813,26 @@
         const database = firebase.database();
         const ordersRef = database.ref('orders'); // Root node for your orders
 
-        let data = []; // This will now hold the local representation of Firebase data
+        let data = []; 
         let filteredData = [];
         let currentView = 'dashboard';
+        // New: Track address column visibility
+        let showAddressColumn = true; 
         
-        // --- Dark Mode Logic ---
+        // --- Dark Mode Logic (unchanged from previous) ---
         const darkModeToggleBtn = document.getElementById('darkModeToggle');
         const darkModeIcon = document.getElementById('darkModeIcon');
 
         function setDarkMode(isDark) {
             if (isDark) {
                 document.body.classList.add('dark-mode');
-                darkModeIcon.textContent = 'light_mode'; // Change icon to sun
-                darkModeToggleBtn.querySelector('span').textContent = 'ნათელი რეჟიმი'; // Change text
+                darkModeIcon.textContent = 'light_mode'; 
+                darkModeToggleBtn.querySelector('span').textContent = 'ნათელი რეჟიმი'; 
                 localStorage.setItem('theme', 'dark');
             } else {
                 document.body.classList.remove('dark-mode');
-                darkModeIcon.textContent = 'dark_mode'; // Change icon to moon
-                darkModeToggleBtn.querySelector('span').textContent = 'ბნელი რეჟიმი'; // Change text
+                darkModeIcon.textContent = 'dark_mode'; 
+                darkModeToggleBtn.querySelector('span').textContent = 'ბნელი რეჟიმი'; 
                 localStorage.setItem('theme', 'light');
             }
         }
@@ -818,16 +842,47 @@
             setDarkMode(!isCurrentlyDark);
         }
 
-        // Check for saved theme on load
+        // --- Address Column Toggle Logic (NEW) ---
+        const toggleAddressCheckbox = document.getElementById('toggleAddressColumn');
+        const tableContainer = document.getElementById('tableContainer');
+
+        function updateAddressColumnVisibility() {
+            showAddressColumn = toggleAddressCheckbox.checked;
+            if (showAddressColumn) {
+                tableContainer.classList.remove('hide-address');
+            } else {
+                tableContainer.classList.add('hide-address');
+            }
+            // Re-render table to update headers/cells immediately
+            renderTable(); 
+            localStorage.setItem('showAddressColumn', showAddressColumn); // Save preference
+        }
+
+        // Initialize address column state on load
         window.addEventListener('DOMContentLoaded', () => {
+            // Dark mode initialization
             const savedTheme = localStorage.getItem('theme');
             if (savedTheme === 'dark') {
                 setDarkMode(true);
             } else {
-                setDarkMode(false); // Ensure light mode is default if no preference or 'light' is saved
+                setDarkMode(false); 
             }
+
+            // Address column initialization
+            const savedAddressColumnPreference = localStorage.getItem('showAddressColumn');
+            if (savedAddressColumnPreference !== null) {
+                showAddressColumn = (savedAddressColumnPreference === 'true');
+                toggleAddressCheckbox.checked = showAddressColumn;
+            } else {
+                showAddressColumn = true; // Default to showing if no preference
+                toggleAddressCheckbox.checked = true;
+            }
+            updateAddressColumnVisibility(); // Apply initial state
         });
-        // --- End Dark Mode Logic ---
+
+        toggleAddressCheckbox.addEventListener('change', updateAddressColumnVisibility);
+        // --- End Address Column Toggle Logic ---
+
 
         // Load data from Firebase on page load and listen for changes
         window.addEventListener('load', function() {
@@ -848,14 +903,13 @@
             ordersRef.on('value', (snapshot) => {
                 const firebaseData = snapshot.val();
                 if (firebaseData) {
-                    // Convert Firebase object to array of objects
                     data = Object.values(firebaseData);
                     populateCourierFilter();
                     applyFilters();
                     updateStats();
                     updateSyncIndicator('', 'სინქრონიზებული');
                 } else {
-                    data = []; // No data in Firebase
+                    data = []; 
                     populateCourierFilter();
                     applyFilters();
                     updateStats();
@@ -894,18 +948,18 @@
             reader.readAsBinaryString(file);
         });
 
-        // Process data and upload to Firebase
+        // Process data and upload to Firebase (UPDATED for 'address')
         function processAndUploadData(jsonData) {
             const newData = {};
-            jsonData.forEach((row, index) => {
-                // Firebase-ში თითოეული ჩანაწერისთვის უნიკალური ID-ის გენერირება
+            jsonData.forEach((row) => {
                 const newRef = ordersRef.push(); 
-                const id = newRef.key; // Firebase-ის მიერ გენერირებული ID
+                const id = newRef.key;
                 
                 newData[id] = {
-                    id: id, // შევინახოთ ID ობიექტშიც
+                    id: id,
                     order: String(row['შეკვეთა'] || row['Order'] || '').trim(),
                     receiver: String(row['მიმღები'] || row['Receiver'] || '').trim(),
+                    address: String(row['მისამართი'] || row['Address'] || '').trim(), // NEW: Address field
                     courier: String(row['კურიერი'] || row['Courier'] || '').trim(),
                     type: String(row['ტემპი'] || row['Type'] || '').trim(),
                     status: 'ასაგროვებელი',
@@ -913,7 +967,6 @@
                 };
             });
             
-            // Set all data at once to the 'orders' root
             ordersRef.set(newData)
                 .then(() => {
                     updateSyncIndicator('', 'სინქრონიზებული');
@@ -938,31 +991,36 @@
             });
         }
 
+        // Render Table (UPDATED for 'address' and dynamic headers)
         function renderTable() {
             const tbody = document.getElementById('tableBody');
             const header = document.getElementById('tableHeader');
             
+            let headersHtml = `
+                <th>შეკვეთა</th>
+                <th>მიმღები</th>
+                <th class="address-column-header">მისამართი</th> <th>კურიერი</th>
+                <th>ტემპი</th>
+                <th>სტატუსი</th>
+            `;
+
+            let colspan = 6; // Default colspan for empty state
+
             if (currentView === 'history') {
-                header.innerHTML = `
-                    <th>შეკვეთა</th>
-                    <th>მიმღები</th>
-                    <th>კურიერი</th>
-                    <th>ტემპი</th>
-                    <th>სტატუსი</th>
-                    <th>შეცვლის თარიღი</th>
-                `;
-            } else {
-                header.innerHTML = `
-                    <th>შეკვეთა</th>
-                    <th>მიმღები</th>
-                    <th>კურიერი</th>
-                    <th>ტემპი</th>
-                    <th>სტატუსი</th>
-                `;
+                headersHtml += `<th>შეცვლის თარიღი</th>`;
+                colspan = 7;
             }
-            
+
+            header.innerHTML = headersHtml;
+
+            // Apply visibility based on showAddressColumn flag
+            if (!showAddressColumn) {
+                // If address column should be hidden, we dynamically hide it with CSS class
+                // This is redundant with the .hide-address class on tableContainer, but useful if we need to target specific <th>/<td>
+                // For now, the .hide-address on tableContainer handles it
+            }
+
             if (filteredData.length === 0) {
-                const colspan = currentView === 'history' ? '6' : '5';
                 const message = data.length === 0 ?
                     '<h3>მონაცემები ჯერ არ არის ატვირთული</h3><p>Excel ფაილის ატვირთვისთვის გამოიყენეთ ზედა ღილაკი</p>' :
                     '<h3>მონაცემები არ მოიძებნა</h3><p>სცადეთ ფილტრების შეცვლა</p>';
@@ -983,12 +1041,15 @@
                     : currentView === 'history' ? '<td class="date-column">-</td>' : '';
                 
                 const statusCell = `<span class="status-badge ${statusClass}" onclick="toggleStatus('${item.id}')">${item.status}</span>`;
+                
+                // New: Address data cell with class for targeting
+                const addressCell = `<td class="address-column-data">${item.address || ''}</td>`;
 
                 return `
                     <tr>
                         <td>${item.order}</td>
                         <td>${item.receiver}</td>
-                        <td>${item.courier}</td>
+                        ${addressCell} <td>${item.courier}</td>
                         <td>${item.type}</td>
                         <td>${statusCell}</td>
                         ${dateColumn}
@@ -998,7 +1059,7 @@
         }
 
         function toggleStatus(id) {
-            const itemRef = database.ref('orders/' + id); // Get reference to the specific item in Firebase
+            const itemRef = database.ref('orders/' + id); 
             itemRef.once('value').then(snapshot => {
                 const item = snapshot.val();
                 if (item) {
@@ -1013,13 +1074,11 @@
                                                now.toLocaleTimeString('ka-GE', { hour: '2-digit', minute: '2-digit' });
                     }
                     
-                    // Update only the status and statusChangedDate fields in Firebase
                     itemRef.update({
                         status: newStatus,
                         statusChangedDate: newStatusChangedDate
                     })
                     .then(() => {
-                        // Data will be re-rendered by the 'onValue' listener
                         updateSyncIndicator('', 'სინქრონიზებული');
                     })
                     .catch(error => {
@@ -1098,17 +1157,15 @@
             }, 3000);
         }
 
-        // --- New code for protected clearAllData ---
-        const ADMIN_CODE = "321321"; // Define the secret code
+        const ADMIN_CODE = "321321"; 
 
         function promptForClearData() {
             const enteredCode = prompt('გთხოვთ, შეიყვანოთ ადმინისტრატორის კოდი მონაცემების წასაშლელად:');
             if (enteredCode === ADMIN_CODE) {
-                clearAllData(); // Call the actual clear function if code is correct
-            } else if (enteredCode !== null) { // If user didn't cancel the prompt
+                clearAllData(); 
+            } else if (enteredCode !== null) { 
                 showNotification('არასწორი კოდი. მონაცემები არ წაიშალა.', 'error');
             }
-            // If enteredCode is null, user clicked "Cancel", so do nothing.
         }
 
         function clearAllData() {
@@ -1127,7 +1184,6 @@
                     });
             }
         }
-        // --- End of new code ---
     </script>
 </body>
 </html>
