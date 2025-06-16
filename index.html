@@ -775,7 +775,7 @@
                             <th>შეკვეთა</th>
                             <th>მიმღები</th>
                             <th>მისამართი</th> <th>კურიერი</th>
-                            <th>ტემპი</th>
+                            <th>თარო</th>
                             <th>სტატუსი</th>
                         </tr>
                     </thead>
@@ -961,7 +961,7 @@
                     receiver: String(row['მიმღები'] || row['Receiver'] || '').trim(),
                     address: String(row['მისამართი'] || row['Address'] || '').trim(), // NEW: Address field
                     courier: String(row['კურიერი'] || row['Courier'] || '').trim(),
-                    type: String(row['ტემპი'] || row['Type'] || '').trim(),
+                    type: String(row['თარო'] || row['Type'] || '').trim(),
                     status: 'ასაგროვებელი',
                     statusChangedDate: null
                 };
@@ -1000,7 +1000,7 @@
                 <th>შეკვეთა</th>
                 <th>მიმღები</th>
                 <th class="address-column-header">მისამართი</th> <th>კურიერი</th>
-                <th>ტემპი</th>
+                <th>თარო</th>
                 <th>სტატუსი</th>
             `;
 
