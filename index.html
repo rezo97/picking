@@ -3,43 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>შეკვეთების მართვის სისტემა</title>
+    <title>შეკვეთების მართვის სისტემა (Firebase)</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
     
     <style>
         :root {
+            /* Light Mode Colors */
             --primary-color: #4285F4; /* Google Blue */
             --primary-dark-color: #1A73E8;
             --accent-color: #34A853; /* Google Green */
             --accent-dark-color: #2E8B49;
             --warning-color: #FBBC05; /* Google Yellow */
             --error-color: #EA4335; /* Google Red */
-            --text-color: #202124; 
-            --light-text-color: #5F6368;
-            --background-light: #F8F9FA; 
-            --surface-color: #FFFFFF; 
+            --text-color: #202124; /* Dark grey for primary text */
+            --light-text-color: #5F6368; /* Medium grey for secondary text */
+            --background-light: #F8F9FA; /* Lightest background */
+            --surface-color: #FFFFFF; /* Card/Container background */
             --border-color: #DADCE0;
             --shadow-1: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
             --shadow-2: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
             --shadow-3: 0 10px 20px rgba(0,0,0,0.19), 0 6px 6px rgba(0,0,0,0.23);
 
-            --dark-primary-color: #8AB4F8; 
+            /* Dark Mode Colors (will be overridden by .dark-mode class) */
+            --dark-primary-color: #8AB4F8; /* Lighter blue for dark mode */
             --dark-primary-dark-color: #AECBFA;
             --dark-accent-color: #81C995;
             --dark-accent-dark-color: #6AA87A;
             --dark-warning-color: #FDD663;
             --dark-error-color: #F28B82;
-            --dark-text-color: #E8EAED; 
-            --dark-light-text-color: #BDC1C6; 
-            --dark-background-light: #202124; 
-            --dark-surface-color: #2F3034; 
+            --dark-text-color: #E8EAED; /* Light grey for primary text */
+            --dark-light-text-color: #BDC1C6; /* Medium light grey for secondary text */
+            --dark-background-light: #202124; /* Darkest background */
+            --dark-surface-color: #2F3034; /* Dark card/container background */
             --dark-border-color: #5F6368;
         }
 
+        /* Dark Mode overrides */
         body.dark-mode {
             background-color: var(--dark-background-light);
             color: var(--dark-text-color);
@@ -47,7 +51,7 @@
 
         body.dark-mode .card {
             background-color: var(--dark-surface-color);
-            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.4); 
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.4); /* Darker shadow for dark mode */
         }
 
         body.dark-mode .header h1,
@@ -56,7 +60,7 @@
             color: var(--dark-text-color);
         }
 
-        body.dark-mode .light-text-color,
+        body.dark-mode .light-text-color, /* For specific elements that use this */
         body.dark-mode .stat-card h4,
         body.dark-mode #fileName,
         body.dark-mode .date-column,
@@ -64,11 +68,13 @@
             color: var(--dark-light-text-color);
         }
 
+        /* NEW: Dark mode for filter labels */
         body.dark-mode .filter-group label,
         body.dark-mode .address-toggle-group label {
-            color: var(--dark-text-color); 
-            font-weight: 700; 
+            color: var(--dark-text-color); /* Make labels brighter in dark mode */
+            font-weight: 700; /* Ensure boldness */
         }
+
 
         body.dark-mode .sync-indicator {
             background-color: var(--dark-accent-color);
@@ -91,7 +97,7 @@
             background-color: var(--dark-error-color);
         }
         body.dark-mode .button-danger:hover {
-            background-color: #CF6679; 
+            background-color: #CF6679; /* Darker red for dark mode hover */
         }
 
         body.dark-mode .view-toggle {
@@ -102,31 +108,31 @@
         }
         body.dark-mode .view-btn.active {
             background-color: var(--dark-primary-color);
-            color: var(--dark-text-color); 
+            color: var(--dark-text-color); /* Use dark text color for active button */
         }
         body.dark-mode .view-btn:hover:not(.active) {
-            background-color: #3C4043; 
+            background-color: #3C4043; /* Slightly lighter dark background for hover */
             color: var(--dark-text-color);
         }
         
         body.dark-mode .filter-group input, 
         body.dark-mode .filter-group select {
-            background-color: #3C4043; 
+            background-color: #3C4043; /* Darker input background */
             border-color: var(--dark-border-color);
             color: var(--dark-text-color);
         }
         body.dark-mode .filter-group input:focus, 
         body.dark-mode .filter-group select:focus {
             border-color: var(--dark-primary-color);
-            box-shadow: 0 0 0 2px rgba(138, 180, 248, 0.2); 
+            box-shadow: 0 0 0 2px rgba(138, 180, 248, 0.2); /* Lighter focus ring */
         }
 
         body.dark-mode th {
-            background-color: #3C4043; 
+            background-color: #3C4043; /* Darker header background */
         }
 
         body.dark-mode tbody tr:hover {
-            background-color: rgba(138, 180, 248, 0.1); 
+            background-color: rgba(138, 180, 248, 0.1); /* Lighter blue hover for dark mode */
         }
 
         body.dark-mode .status-collect {
@@ -152,17 +158,6 @@
             background-color: var(--dark-error-color);
         }
         
-        /* Status Change Animation - REMOVED FOR PERFORMANCE */
-        /* .flash-green { animation: flashGreen 0.5s ease-out; } */
-        /* @keyframes flashGreen { ... } */
-        /* .flash-yellow { animation: flashYellow 0.5s ease-out; } */
-        /* @keyframes flashYellow { ... } */
-
-        /* Status Change Confirmation Dialog - REMOVED */
-        .status-change-dialog { display: none; } 
-        /* .status-change-dialog.show-dialog { display: none; } */
-
-
         /* New styles for address column toggle */
         .address-toggle-group {
             display: flex;
@@ -172,9 +167,9 @@
         }
 
         .address-toggle-group label {
-            font-weight: 700; 
-            color: var(--light-text-color); 
-            font-size: 15px; 
+            font-weight: 700; /* Make it bold */
+            color: var(--light-text-color); /* Kept same as other labels for light mode */
+            font-size: 15px; /* Slightly larger */
             cursor: pointer;
         }
 
@@ -197,7 +192,7 @@
             min-height: 100vh;
             color: var(--text-color);
             line-height: 1.6;
-            transition: background-color 0.3s ease, color 0.3s ease; 
+            transition: background-color 0.3s ease, color 0.3s ease; /* Smooth transition for theme change */
         }
 
         .container {
@@ -214,7 +209,7 @@
             border-radius: 8px;
             box-shadow: var(--shadow-1);
             padding: 24px;
-            transition: background-color 0.3s ease, box-shadow 0.3s ease; 
+            transition: background-color 0.3s ease, box-shadow 0.3s ease; /* Smooth transition for theme change */
         }
 
         /* Header */
@@ -241,16 +236,16 @@
             font-size: 13px;
             font-weight: 500;
             color: var(--surface-color);
-            background-color: var(--accent-color); 
+            background-color: var(--accent-color); /* Default: Synced (Green) */
             transition: background-color 0.3s ease, color 0.3s ease;
         }
 
         .sync-indicator.syncing {
-            background-color: var(--warning-color); 
+            background-color: var(--warning-color); /* Syncing (Yellow) */
         }
 
         .sync-indicator.error {
-            background-color: var(--error-color); 
+            background-color: var(--error-color); /* Error (Red) */
         }
 
         .sync-dot {
@@ -312,7 +307,7 @@
         }
 
         .button-danger:hover {
-            background-color: #C53929; 
+            background-color: #C53929; /* Darker red */
         }
         
         .file-input-wrapper {
@@ -326,6 +321,8 @@
         }
 
         .file-input-label {
+            /* Using @extend is not native CSS, but indicates shared styles */
+            /* In real CSS, you'd copy these properties or use a preprocessor */
             padding: 10px 20px;
             border: none;
             border-radius: 4px;
@@ -395,6 +392,8 @@
         }
 
         .stat-card {
+            /* Using @extend is not native CSS, but indicates shared styles */
+            /* In real CSS, you'd copy these properties or use a preprocessor */
             background-color: var(--surface-color);
             border-radius: 8px;
             box-shadow: var(--shadow-1);
@@ -424,6 +423,8 @@
 
         /* Filters */
         .filters {
+            /* Using @extend is not native CSS, but indicates shared styles */
+            /* In real CSS, you'd copy these properties or use a preprocessor */
             background-color: var(--surface-color);
             border-radius: 8px;
             box-shadow: var(--shadow-1);
@@ -451,10 +452,10 @@
         }
 
         .filter-group label {
-            font-weight: 700; 
+            font-weight: 700; /* Make it bold */
             margin-bottom: 8px;
-            color: var(--light-text-color); 
-            font-size: 15px; 
+            color: var(--light-text-color); /* Kept same as other labels for light mode */
+            font-size: 15px; /* Slightly larger */
         }
 
         .filter-group input, 
@@ -466,17 +467,19 @@
             color: var(--text-color);
             background-color: var(--surface-color);
             transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.3s ease, color 0.3s ease;
-            min-height: 40px; 
+            min-height: 40px; /* Ensure consistent height */
         }
 
         .filter-group input:focus, 
         .filter-group select:focus {
             outline: none;
             border-color: var(--primary-color);
-            box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.2); 
+            box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.2); /* Focus ring */
         }
 
         .clear-filters {
+            /* Using @extend is not native CSS, but indicates shared styles */
+            /* In real CSS, you'd copy these properties or use a preprocessor */
             padding: 10px 20px;
             border: none;
             border-radius: 4px;
@@ -491,7 +494,7 @@
 
             background-color: var(--error-color);
             color: white;
-            margin-top: 10px; 
+            margin-top: 10px; /* Space from filters */
         }
         .clear-filters:hover {
             background-color: #C53929;
@@ -499,11 +502,13 @@
 
         /* Table */
         .table-container {
+            /* Using @extend is not native CSS, but indicates shared styles */
+            /* In real CSS, you'd copy these properties or use a preprocessor */
             background-color: var(--surface-color);
             border-radius: 8px;
             box-shadow: var(--shadow-1);
-            padding: 0; 
-            overflow: hidden; 
+            padding: 0; /* Table content will have its own padding */
+            overflow: hidden; /* For rounded corners */
             transition: background-color 0.3s ease, box-shadow 0.3s ease;
         }
 
@@ -535,15 +540,6 @@
             top: 0;
             z-index: 10;
             transition: background-color 0.3s ease, color 0.3s ease;
-            cursor: pointer; /* Added for sorting */
-        }
-        
-        th.sorted-asc::after {
-            content: ' \25B2'; /* Up arrow */
-        }
-
-        th.sorted-desc::after {
-            content: ' \25BC'; /* Down arrow */
         }
 
         tbody tr:last-child td {
@@ -551,7 +547,7 @@
         }
 
         tbody tr:hover {
-            background-color: rgba(66, 133, 244, 0.05); 
+            background-color: rgba(66, 133, 244, 0.05); /* Light blue hover */
         }
 
         /* Status Badge */
@@ -572,7 +568,7 @@
 
         .status-collect {
             background-color: var(--warning-color);
-            color: var(--text-color); 
+            color: var(--text-color); /* Dark text for yellow background */
         }
 
         .status-collected {
@@ -613,7 +609,7 @@
             padding: 14px 20px;
             border-radius: 8px;
             z-index: 1000;
-            transform: translateX(calc(100% + 20px)); 
+            transform: translateX(calc(100% + 20px)); /* Hidden by default */
             transition: transform 0.3s ease-out, opacity 0.3s ease-out;
             opacity: 0;
             box-shadow: var(--shadow-2);
@@ -689,8 +685,6 @@
                 flex-direction: column;
                 align-items: flex-start;
             }
-            /* .status-dialog-content { REMOVED } */
-            /* .status-dialog-actions button { REMOVED } */
         }
     </style>
 </head>
@@ -708,17 +702,15 @@
                 <div class="file-input-wrapper">
                     <input type="file" id="fileInput" class="file-input" accept=".xlsx,.xls" />
                     <label for="fileInput" class="file-input-label">
-                        <i class="material-icons">upload_file</i>
-                        Excel ფაილის ატვირთვა
+                        <i class="material-icons">upload_file</i> Excel ფაილის ატვირთვა
                     </label>
                 </div>
                 <button class="button button-danger clear-data-btn" onclick="promptForClearData()">
-                    <i class="material-icons">delete_forever</i>
-                    მონაცემების წაშლა
+                    <i class="material-icons">delete_forever</i> მონაცემების წაშლა
                 </button>
                 <button id="darkModeToggle" class="button button-primary" onclick="toggleDarkMode()">
-                    <i class="material-icons" id="darkModeIcon">dark_mode</i>
-                    <span id="darkModeText">ბნელი რეჟიმი</span> </button>
+                    <i class="material-icons" id="darkModeIcon">dark_mode</i> ბნელი რეჟიმი
+                </button>
                 <span id="fileName"></span>
             </div>
         </div>
@@ -787,13 +779,12 @@
                 <table id="dataTable">
                     <thead>
                         <tr id="tableHeader">
-                            <th data-sort-key="order">შეკვეთა</th>
-                            <th data-sort-key="receiver">მიმღები</th>
-                            <th data-sort-key="address" class="address-column-header">მისამართი</th>
-                            <th data-sort-key="courier">კურიერი</th>
-                            <th data-sort-key="type">ტემპი</th>
-                            <th data-sort-key="status">სტატუსი</th>
-                            </tr>
+                            <th>შეკვეთა</th>
+                            <th>მიმღები</th>
+                            <th>მისამართი</th> <th>კურიერი</th>
+                            <th>ტემპი</th>
+                            <th>სტატუსი</th>
+                        </tr>
                     </thead>
                     <tbody id="tableBody">
                         <tr>
@@ -811,16 +802,18 @@
     <div id="notification" class="notification"></div>
 
     <script>
+        // *** Firebase Configuration - ეს თქვენი Firebase პროექტის მონაცემებია ***
         const firebaseConfig = {
-            apiKey: "YOUR_FIREBASE_API_KEY", // <-- აქ ჩასვით თქვენი Firebase API Key
+            apiKey: "AIzaSyAX83Mj3ZPlhTC1PGlwpP6nNPc9INj_iAE",
             authDomain: "picking-2da5d.firebaseapp.com",
             databaseURL: "https://picking-2da5d-default-rtdb.firebaseio.com",
             projectId: "picking-2da5d",
             storageBucket: "picking-2da5d.firebasestorage.app",
             messagingSenderId: "985054920430",
             appId: "1:985054920430:web:2e49cd2b1ebbab9ba23dff",
-            measurementId: "G-ZEJHOW847HT" 
+            measurementId: "G-ZEJHW847HT" 
         };
+        // *** დასრულდა Firebase კონფიგურაციის ადგილი ***
 
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
@@ -830,52 +823,23 @@
         let filteredData = [];
         let currentView = 'dashboard';
         let showAddressColumn = true; 
-        let currentSortKey = null;
-        let currentSortOrder = 'asc'; // 'asc' or 'desc'
-
-        // DOM elements
+        
+        // --- Dark Mode Logic ---
         const darkModeToggleBtn = document.getElementById('darkModeToggle');
         const darkModeIcon = document.getElementById('darkModeIcon');
-        const darkModeText = document.getElementById('darkModeText'); // Get the span element
-        const toggleAddressCheckbox = document.getElementById('toggleAddressColumn');
-        const tableContainer = document.getElementById('tableContainer');
-        const filterOrderInput = document.getElementById('filterOrder');
-        const filterReceiverInput = document.getElementById('filterReceiver');
-        const filterCourierSelect = document.getElementById('filterCourier');
-        const filterStatusSelect = document.getElementById('filterStatus');
-        
-        // Removed dialog specific elements as the dialog is no longer used
-        // const statusChangeDialog = document.getElementById('statusChangeDialog');
-        // const dialogTitle = document.getElementById('dialogTitle');
-        // const dialogMessage = document.getElementById('dialogMessage');
-        // const confirmStatusChangeBtn = document.getElementById('confirmStatusChange');
-        // const cancelStatusChangeBtn = document.getElementById('cancelStatusChange');
 
-        // let pendingStatusChangeId = null; // Removed as dialog is no longer used
-
-        // --- Dark Mode Logic ---
         function setDarkMode(isDark) {
             if (isDark) {
                 document.body.classList.add('dark-mode');
                 darkModeIcon.textContent = 'light_mode'; 
-                if (darkModeText) { 
-                    darkModeText.textContent = 'ნათელი რეჟიმი'; 
-                }
+                darkModeToggleBtn.querySelector('span').textContent = 'ნათელი რეჟიმი'; 
                 localStorage.setItem('theme', 'dark');
             } else {
                 document.body.classList.remove('dark-mode');
                 darkModeIcon.textContent = 'dark_mode'; 
-                if (darkModeText) { 
-                    darkModeText.textContent = 'ბნელი რეჟიმი'; 
-                }
+                darkModeToggleBtn.querySelector('span').textContent = 'ბნელი რეჟიმი'; 
                 localStorage.setItem('theme', 'light');
             }
-            // Dialog theme update logic removed as dialog is no longer used
-            // if (statusChangeDialog && document.body.classList.contains('dark-mode')) {
-            //     statusChangeDialog.querySelector('.status-dialog-content').classList.add('dark-mode');
-            // } else if (statusChangeDialog) {
-            //     statusChangeDialog.querySelector('.status-dialog-content').classList.remove('dark-mode');
-            // }
         }
 
         function toggleDarkMode() {
@@ -884,6 +848,9 @@
         }
 
         // --- Address Column Toggle Logic ---
+        const toggleAddressCheckbox = document.getElementById('toggleAddressColumn');
+        const tableContainer = document.getElementById('tableContainer');
+
         function updateAddressColumnVisibility() {
             showAddressColumn = toggleAddressCheckbox.checked;
             if (showAddressColumn) {
@@ -895,39 +862,13 @@
             localStorage.setItem('showAddressColumn', showAddressColumn); 
         }
 
-        // --- Filter State Persistence ---
-        function saveFilterState() {
-            const filters = {
-                order: filterOrderInput.value,
-                receiver: filterReceiverInput.value,
-                courier: filterCourierSelect.value,
-                status: filterStatusSelect.value,
-                view: currentView
-            };
-            localStorage.setItem('filterState', JSON.stringify(filters));
-        }
-
-        function loadFilterState() {
-            const savedFilters = localStorage.getItem('filterState');
-            if (savedFilters) {
-                const filters = JSON.parse(savedFilters);
-                filterOrderInput.value = filters.order || '';
-                filterReceiverInput.value = filters.receiver || '';
-                // filterCourierSelect.value will be set after populateCourierFilter,
-                // so we don't set it here directly from localStorage.
-                filterStatusSelect.value = filters.status || '';
-                
-                // Set view
-                if (filters.view && filters.view !== currentView) {
-                    switchView(filters.view, false); // Don't save to local storage again
-                }
-            }
-        }
-
-        // --- Initial Load ---
         window.addEventListener('DOMContentLoaded', () => {
             const savedTheme = localStorage.getItem('theme');
-            setDarkMode(savedTheme === 'dark');
+            if (savedTheme === 'dark') {
+                setDarkMode(true);
+            } else {
+                setDarkMode(false); 
+            }
 
             const savedAddressColumnPreference = localStorage.getItem('showAddressColumn');
             if (savedAddressColumnPreference !== null) {
@@ -938,18 +879,16 @@
                 toggleAddressCheckbox.checked = true;
             }
             updateAddressColumnVisibility(); 
+        });
 
-            // Initialize filter event listeners
-            filterOrderInput.addEventListener('input', () => { applyFilters(); saveFilterState(); });
-            filterReceiverInput.addEventListener('input', () => { applyFilters(); saveFilterState(); });
-            filterCourierSelect.addEventListener('change', () => { applyFilters(); saveFilterState(); });
-            filterStatusSelect.addEventListener('change', () => { applyFilters(); saveFilterState(); });
-            toggleAddressCheckbox.addEventListener('change', updateAddressColumnVisibility);
+        toggleAddressCheckbox.addEventListener('change', updateAddressColumnVisibility);
+        // --- End Address Column Toggle Logic ---
 
+
+        window.addEventListener('load', function() {
             listenForFirebaseChanges();
         });
 
-        // --- Firebase Sync Indicator ---
         function updateSyncIndicator(status, message) {
             const indicator = document.getElementById('syncIndicator');
             const statusText = document.getElementById('syncStatus');
@@ -958,7 +897,6 @@
             statusText.textContent = message;
         }
 
-        // --- Firebase Data Listener ---
         function listenForFirebaseChanges() {
             updateSyncIndicator('syncing', 'სინქრონიზება...');
             ordersRef.on('value', (snapshot) => {
@@ -966,15 +904,15 @@
                 if (firebaseData) {
                     data = Object.values(firebaseData);
                     populateCourierFilter();
-                    loadFilterState(); // Load filters after data is available and courier options are populated
+                    // IMPORTANT FIX: Call applyFilters here to re-apply filters after data update
                     applyFilters(); 
-                    updateStats(); // Ensure stats are updated on every data change
+                    updateStats();
                     updateSyncIndicator('', 'სინქრონიზებული');
                 } else {
                     data = []; 
                     populateCourierFilter();
                     applyFilters();
-                    updateStats(); // Ensure stats are updated even if no data
+                    updateStats();
                     updateSyncIndicator('', 'სინქრონიზებული');
                 }
             }, (error) => {
@@ -984,7 +922,6 @@
             });
         }
 
-        // --- Excel File Upload ---
         document.getElementById('fileInput').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (!file) return;
@@ -1040,102 +977,42 @@
                 });
         }
 
-        // --- Filter Population & Logic ---
         function populateCourierFilter() {
             const couriers = [...new Set(data.map(item => item.courier))].filter(Boolean).sort();
-            const currentCourierFilter = filterCourierSelect.value; 
+            const courierSelect = document.getElementById('filterCourier');
+            const currentCourierFilter = courierSelect.value; // Save current selection
 
-            filterCourierSelect.innerHTML = '<option value="">ყველა კურიერი</option>';
+            courierSelect.innerHTML = '<option value="">ყველა კურიერი</option>';
             couriers.forEach(courier => {
                 const option = document.createElement('option');
                 option.value = courier;
                 option.textContent = courier;
-                filterCourierSelect.appendChild(option);
+                courierSelect.appendChild(option);
             });
-            // Re-apply the previously selected courier filter if it still exists
-            if (couriers.includes(currentCourierFilter) || currentCourierFilter === '') {
-                filterCourierSelect.value = currentCourierFilter;
-            } else {
-                filterCourierSelect.value = ''; // Reset if previously selected courier is no longer in data
-            }
+            courierSelect.value = currentCourierFilter; // Restore previous selection
         }
 
-        function applyFilters() {
-            const orderFilter = filterOrderInput.value.toLowerCase().trim();
-            const receiverFilter = filterReceiverInput.value.toLowerCase().trim();
-            const courierFilter = filterCourierSelect.value;
-            const statusFilter = filterStatusSelect.value;
-
-            let dataToFilter = [...data];
-            
-            if (currentView === 'dashboard') {
-                dataToFilter = data.filter(item => item.status === 'ასაგროვებელი');
-            }
-
-            filteredData = dataToFilter.filter(item => {
-                const orderMatch = !orderFilter || String(item.order).toLowerCase().includes(orderFilter);
-                const receiverMatch = !receiverFilter || String(item.receiver).toLowerCase().includes(receiverFilter);
-                const courierMatch = !courierFilter || item.courier === courierFilter;
-                
-                const statusMatch = (currentView === 'dashboard' && item.status === 'ასაგროვებელი') || // Dashboard only shows 'ასაგროვებელი'
-                                    (currentView === 'history' && (!statusFilter || item.status === statusFilter)); // History respects filter or shows all
-
-                return orderMatch && receiverMatch && courierMatch && statusMatch;
-            });
-
-            applySorting(); // Apply sorting after filtering
-            renderTable();
-        }
-
-        function clearAllFilters() {
-            filterOrderInput.value = '';
-            filterReceiverInput.value = '';
-            filterCourierSelect.value = '';
-            filterStatusSelect.value = '';
-            saveFilterState(); // Save cleared state
-            applyFilters();
-        }
-
-        // --- Table Rendering (UPDATED for sorting) ---
         function renderTable() {
             const tbody = document.getElementById('tableBody');
-            const headerRow = document.getElementById('tableHeader');
+            const header = document.getElementById('tableHeader');
             
-            // Clear existing sort indicators
-            headerRow.querySelectorAll('th').forEach(th => {
-                th.classList.remove('sorted-asc', 'sorted-desc');
-            });
-
-            // Recreate headers for history view
             let headersHtml = `
-                <th data-sort-key="order">შეკვეთა</th>
-                <th data-sort-key="receiver">მიმღები</th>
-                <th data-sort-key="address" class="address-column-header">მისამართი</th> 
-                <th data-sort-key="courier">კურიერი</th>
-                <th data-sort-key="type">ტემპი</th>
-                <th data-sort-key="status">სტატუსი</th>
+                <th>შეკვეთა</th>
+                <th>მიმღები</th>
+                <th class="address-column-header">მისამართი</th> 
+                <th>კურიერი</th>
+                <th>ტემპი</th>
+                <th>სტატუსი</th>
             `;
+
             let colspan = 6; 
 
             if (currentView === 'history') {
-                headersHtml += `<th data-sort-key="statusChangedDate">შეცვლის თარიღი</th>`;
+                headersHtml += `<th>შეცვლის თარიღი</th>`;
                 colspan = 7;
             }
-            headerRow.innerHTML = headersHtml;
 
-            // Add click listeners for sorting
-            headerRow.querySelectorAll('th').forEach(th => {
-                const sortKey = th.getAttribute('data-sort-key');
-                if (sortKey) {
-                    th.addEventListener('click', () => {
-                        handleSort(sortKey);
-                    });
-                    // Apply visual sort indicator if currently sorted by this column
-                    if (sortKey === currentSortKey) {
-                        th.classList.add(currentSortOrder === 'asc' ? 'sorted-asc' : 'sorted-desc');
-                    }
-                }
-            });
+            header.innerHTML = headersHtml;
 
             if (filteredData.length === 0) {
                 const message = data.length === 0 ?
@@ -1157,12 +1034,12 @@
                     ? `<td class="date-column">${item.statusChangedDate}</td>` 
                     : currentView === 'history' ? '<td class="date-column">-</td>' : '';
                 
-                // Changed onclick to directly call toggleStatus
                 const statusCell = `<span class="status-badge ${statusClass}" onclick="toggleStatus('${item.id}')">${item.status}</span>`;
+                
                 const addressCell = `<td class="address-column-data">${item.address || ''}</td>`;
 
                 return `
-                    <tr id="order-row-${item.id}">
+                    <tr>
                         <td>${item.order}</td>
                         <td>${item.receiver}</td>
                         ${addressCell} 
@@ -1173,113 +1050,52 @@
                     </tr>
                 `;
             }).join('');
-
-            updateAddressColumnVisibility(); // Re-apply visibility after rendering
         }
 
-        // --- Sorting Logic ---
-        function handleSort(key) {
-            if (currentSortKey === key) {
-                currentSortOrder = currentSortOrder === 'asc' ? 'desc' : 'asc';
-            } else {
-                currentSortKey = key;
-                currentSortOrder = 'asc';
-            }
-            applySorting();
-            renderTable();
-        }
+        function toggleStatus(id) {
+            const itemRef = database.ref('orders/' + id); 
+            itemRef.once('value').then(snapshot => {
+                const item = snapshot.val();
+                if (item) {
+                    updateSyncIndicator('syncing', 'სინქრონიზება...');
+                    const oldStatus = item.status;
+                    const newStatus = item.status === 'ასაგროვებელი' ? 'აგროვებული' : 'ასაგროვებელი';
+                    let newStatusChangedDate = item.statusChangedDate;
 
-        function applySorting() {
-            if (!currentSortKey) return;
-
-            filteredData.sort((a, b) => {
-                let valA = a[currentSortKey];
-                let valB = b[currentSortKey];
-
-                // Handle null/undefined values by treating them as empty strings for comparison
-                valA = (valA === null || valA === undefined) ? '' : String(valA);
-                valB = (valB === null || valB === undefined) ? '' : String(valB);
-
-                // Special handling for numerical sort if values are numbers
-                const numA = parseFloat(valA);
-                const numB = parseFloat(valB);
-
-                if (!isNaN(numA) && isFinite(numA) && !isNaN(numB) && isFinite(numB)) {
-                    // Both are valid numbers
-                    return currentSortOrder === 'asc' ? numA - numB : numB - numA;
-                } else {
-                    // Fallback to string comparison
-                    valA = valA.toLowerCase();
-                    valB = valB.toLowerCase();
-
-                    if (valA < valB) {
-                        return currentSortOrder === 'asc' ? -1 : 1;
+                    if (oldStatus !== newStatus) {
+                        const now = new Date();
+                        newStatusChangedDate = now.toLocaleDateString('ka-GE') + ' ' + 
+                                               now.toLocaleTimeString('ka-GE', { hour: '2-digit', minute: '2-digit' });
                     }
-                    if (valA > valB) {
-                        return currentSortOrder === 'asc' ? 1 : -1;
-                    }
-                    return 0;
+                    
+                    itemRef.update({
+                        status: newStatus,
+                        statusChangedDate: newStatusChangedDate
+                    })
+                    .then(() => {
+                        // Data will be re-rendered by the 'onValue' listener.
+                        // The 'onValue' listener now correctly calls applyFilters() to preserve filters.
+                        updateSyncIndicator('', 'სინქრონიზებული');
+                    })
+                    .catch(error => {
+                        console.error("Firebase Update Failed:", error);
+                        updateSyncIndicator('error', 'სტატუსის განახლების შეცდომა');
+                        showNotification('სტატუსის განახლება ვერ მოხერხდა.', 'error');
+                    });
                 }
+            }).catch(error => {
+                console.error("Error fetching item for toggle:", error);
+                showNotification('მონაცემების მოძიება ვერ მოხერხდა.', 'error');
             });
         }
 
-        // Toggle Status function (now back to simple confirm)
-        function toggleStatus(id) {
-            const item = data.find(d => d.id === id);
-            if (!item) return;
-
-            const oldStatus = item.status;
-            const newStatus = oldStatus === 'ასაგროვებელი' ? 'აგროვებული' : 'ასაგროვებელი';
-
-            if (confirm(`ნამდვილად გსურთ შეკვეთის სტატუსის შეცვლა "${oldStatus}"-დან "${newStatus}"-ზე?`)) {
-                updateSyncIndicator('syncing', 'სინქრონიზება...');
-                const itemRef = database.ref('orders/' + id); 
-                let newStatusChangedDate = item.statusChangedDate;
-
-                if (oldStatus !== newStatus) {
-                    const now = new Date();
-                    newStatusChangedDate = now.toLocaleDateString('ka-GE') + ' ' + 
-                                           now.toLocaleTimeString('ka-GE', { hour: '2-digit', minute: '2-digit' });
-                }
-                
-                itemRef.update({
-                    status: newStatus,
-                    statusChangedDate: newStatusChangedDate
-                })
-                .then(() => {
-                    updateSyncIndicator('', 'სინქრონიზებული');
-                    showNotification('სტატუსი წარმატებით განახლდა!');
-                    // No visual flash animation for performance
-                })
-                .catch(error => {
-                    console.error("Firebase Update Failed:", error);
-                    updateSyncIndicator('error', 'სტატუსის განახლების შეცდომა');
-                    showNotification('სტატუსის განახლება ვერ მოხერხდა.', 'error');
-                });
-            }
-        }
-
-        // --- View Switching ---
-        function switchView(view, saveToLocal = true) {
+        function switchView(view) {
             currentView = view;
             document.querySelectorAll('.view-btn').forEach(btn => btn.classList.remove('active'));
-            // Corrected selector for view buttons to ensure active class is set correctly
-            const targetButton = document.querySelector(`.view-toggle .view-btn[onclick="switchView('${view}')"]`);
-            if (targetButton) {
-                targetButton.classList.add('active');
-            }
-            
-            // Reset sorting when switching views for consistent behavior
-            currentSortKey = null;
-            currentSortOrder = 'asc';
-
-            if (saveToLocal) {
-                saveFilterState(); // Save the view change
-            }
-            applyFilters(); // Re-apply filters based on new view
+            document.querySelector(`.view-toggle .view-btn[onclick="switchView('${view}')"]`).classList.add('active');
+            applyFilters();
         }
 
-        // --- Stats Update ---
         function updateStats() {
             const total = data.length;
             const toCollect = data.filter(item => item.status === 'ასაგროვებელი').length;
@@ -1290,7 +1106,44 @@
             document.getElementById('collectedOrders').textContent = collected;
         }
 
-        // --- Notification System ---
+        function applyFilters() {
+            const orderFilter = document.getElementById('filterOrder').value.toLowerCase().trim();
+            const receiverFilter = document.getElementById('filterReceiver').value.toLowerCase().trim();
+            const courierFilter = document.getElementById('filterCourier').value;
+            const statusFilter = document.getElementById('filterStatus').value;
+
+            let dataToFilter = [...data];
+            
+            if (currentView === 'dashboard') {
+                dataToFilter = data.filter(item => item.status === 'ასაგროვებელი');
+            }
+
+            filteredData = dataToFilter.filter(item => {
+                const orderMatch = !orderFilter || String(item.order).toLowerCase().includes(orderFilter);
+                const receiverMatch = !receiverFilter || String(item.receiver).toLowerCase().includes(receiverFilter);
+                const courierMatch = !courierFilter || item.courier === courierFilter;
+                
+                const statusMatch = currentView === 'dashboard' ? true : !statusFilter || item.status === statusFilter;
+
+                return orderMatch && receiverMatch && courierMatch && statusMatch;
+            });
+            renderTable();
+        }
+
+        // Filter event listeners
+        document.getElementById('filterOrder').addEventListener('input', applyFilters);
+        document.getElementById('filterReceiver').addEventListener('input', applyFilters);
+        document.getElementById('filterCourier').addEventListener('change', applyFilters);
+        document.getElementById('filterStatus').addEventListener('change', applyFilters);
+
+        function clearAllFilters() {
+            document.getElementById('filterOrder').value = '';
+            document.getElementById('filterReceiver').value = '';
+            document.getElementById('filterCourier').value = '';
+            document.getElementById('filterStatus').value = '';
+            applyFilters();
+        }
+
         function showNotification(message, type = 'success') {
             const notification = document.getElementById('notification');
             notification.textContent = message;
@@ -1300,7 +1153,6 @@
             }, 3000);
         }
 
-        // --- Admin Data Clear ---
         const ADMIN_CODE = "321321"; 
 
         function promptForClearData() {
