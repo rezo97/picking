@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>შეკვეთების მართვის სისტემა (გაუმჯობესებული)</title>
+    <title>შეკვეთების მართვის სისტემა</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -151,74 +151,18 @@
         body.dark-mode .notification.error {
             background-color: var(--dark-error-color);
         }
-
-        /* Status Change Animation */
-        .flash-green {
-            animation: flashGreen 0.5s ease-out;
-        }
-        @keyframes flashGreen {
-            0% { background-color: rgba(52, 168, 83, 0.3); } /* Start with a light green flash */
-            100% { background-color: transparent; }
-        }
-        .flash-yellow {
-            animation: flashYellow 0.5s ease-out;
-        }
-        @keyframes flashYellow {
-            0% { background-color: rgba(251, 188, 5, 0.3); } /* Start with a light yellow flash */
-            100% { background-color: transparent; }
-        }
-
-        .status-change-dialog {
-            display: none; /* Hidden by default */
-            position: fixed;
-            z-index: 1001;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgba(0,0,0,0.6);
-            align-items: center;
-            justify-content: center;
-        }
-
-        .status-change-dialog.show-dialog {
-            display: flex;
-        }
-
-        .status-dialog-content {
-            background-color: var(--surface-color);
-            margin: auto;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: var(--shadow-3);
-            width: 90%;
-            max-width: 400px;
-            text-align: center;
-            color: var(--text-color);
-        }
-
-        .status-dialog-content.dark-mode {
-            background-color: var(--dark-surface-color);
-            color: var(--dark-text-color);
-        }
-
-        .status-dialog-content h3 {
-            margin-bottom: 20px;
-            font-size: 22px;
-            font-weight: 500;
-        }
-
-        .status-dialog-content p {
-            margin-bottom: 30px;
-            font-size: 16px;
-        }
-
-        .status-dialog-actions button {
-            margin: 0 10px;
-            width: 120px;
-        }
         
+        /* Status Change Animation - REMOVED FOR PERFORMANCE */
+        /* .flash-green { animation: flashGreen 0.5s ease-out; } */
+        /* @keyframes flashGreen { ... } */
+        /* .flash-yellow { animation: flashYellow 0.5s ease-out; } */
+        /* @keyframes flashYellow { ... } */
+
+        /* Status Change Confirmation Dialog - REMOVED */
+        .status-change-dialog { display: none; } 
+        /* .status-change-dialog.show-dialog { display: none; } */
+
+
         /* New styles for address column toggle */
         .address-toggle-group {
             display: flex;
@@ -745,15 +689,8 @@
                 flex-direction: column;
                 align-items: flex-start;
             }
-            .status-dialog-content {
-                width: 95%;
-                padding: 20px;
-            }
-            .status-dialog-actions button {
-                width: auto;
-                flex-grow: 1;
-                margin: 5px;
-            }
+            /* .status-dialog-content { REMOVED } */
+            /* .status-dialog-actions button { REMOVED } */
         }
     </style>
 </head>
@@ -873,20 +810,9 @@
 
     <div id="notification" class="notification"></div>
 
-    <div id="statusChangeDialog" class="status-change-dialog">
-        <div class="status-dialog-content">
-            <h3 id="dialogTitle"></h3>
-            <p id="dialogMessage"></p>
-            <div class="status-dialog-actions">
-                <button class="button button-danger" id="cancelStatusChange">გაუქმება</button>
-                <button class="button button-primary" id="confirmStatusChange">დადასტურება</button>
-            </div>
-        </div>
-    </div>
-
     <script>
         const firebaseConfig = {
-            apiKey: "AIzaSyAX83Mj3ZPlhTC1PGlwpP6nNPc9INj_iAE", // თქვენი API Key
+            apiKey: "YOUR_FIREBASE_API_KEY", // <-- აქ ჩასვით თქვენი Firebase API Key
             authDomain: "picking-2da5d.firebaseapp.com",
             databaseURL: "https://picking-2da5d-default-rtdb.firebaseio.com",
             projectId: "picking-2da5d",
@@ -917,38 +843,39 @@
         const filterReceiverInput = document.getElementById('filterReceiver');
         const filterCourierSelect = document.getElementById('filterCourier');
         const filterStatusSelect = document.getElementById('filterStatus');
-        const statusChangeDialog = document.getElementById('statusChangeDialog');
-        const dialogTitle = document.getElementById('dialogTitle');
-        const dialogMessage = document.getElementById('dialogMessage');
-        const confirmStatusChangeBtn = document.getElementById('confirmStatusChange');
-        const cancelStatusChangeBtn = document.getElementById('cancelStatusChange');
+        
+        // Removed dialog specific elements as the dialog is no longer used
+        // const statusChangeDialog = document.getElementById('statusChangeDialog');
+        // const dialogTitle = document.getElementById('dialogTitle');
+        // const dialogMessage = document.getElementById('dialogMessage');
+        // const confirmStatusChangeBtn = document.getElementById('confirmStatusChange');
+        // const cancelStatusChangeBtn = document.getElementById('cancelStatusChange');
 
-        let pendingStatusChangeId = null; // Store ID for status change confirmation
+        // let pendingStatusChangeId = null; // Removed as dialog is no longer used
 
         // --- Dark Mode Logic ---
         function setDarkMode(isDark) {
             if (isDark) {
                 document.body.classList.add('dark-mode');
                 darkModeIcon.textContent = 'light_mode'; 
-                if (darkModeText) { // Check if element exists before setting textContent
+                if (darkModeText) { 
                     darkModeText.textContent = 'ნათელი რეჟიმი'; 
                 }
                 localStorage.setItem('theme', 'dark');
             } else {
                 document.body.classList.remove('dark-mode');
                 darkModeIcon.textContent = 'dark_mode'; 
-                if (darkModeText) { // Check if element exists before setting textContent
+                if (darkModeText) { 
                     darkModeText.textContent = 'ბნელი რეჟიმი'; 
                 }
                 localStorage.setItem('theme', 'light');
             }
-            // Ensure dialog also updates its theme
-            const dialogContent = statusChangeDialog.querySelector('.status-dialog-content');
-            if (document.body.classList.contains('dark-mode')) {
-                dialogContent.classList.add('dark-mode');
-            } else {
-                dialogContent.classList.remove('dark-mode');
-            }
+            // Dialog theme update logic removed as dialog is no longer used
+            // if (statusChangeDialog && document.body.classList.contains('dark-mode')) {
+            //     statusChangeDialog.querySelector('.status-dialog-content').classList.add('dark-mode');
+            // } else if (statusChangeDialog) {
+            //     statusChangeDialog.querySelector('.status-dialog-content').classList.remove('dark-mode');
+            // }
         }
 
         function toggleDarkMode() {
@@ -986,7 +913,8 @@
                 const filters = JSON.parse(savedFilters);
                 filterOrderInput.value = filters.order || '';
                 filterReceiverInput.value = filters.receiver || '';
-                // filterCourierSelect.value will be set after populateCourierFilter
+                // filterCourierSelect.value will be set after populateCourierFilter,
+                // so we don't set it here directly from localStorage.
                 filterStatusSelect.value = filters.status || '';
                 
                 // Set view
@@ -1040,13 +968,13 @@
                     populateCourierFilter();
                     loadFilterState(); // Load filters after data is available and courier options are populated
                     applyFilters(); 
-                    updateStats();
+                    updateStats(); // Ensure stats are updated on every data change
                     updateSyncIndicator('', 'სინქრონიზებული');
                 } else {
                     data = []; 
                     populateCourierFilter();
                     applyFilters();
-                    updateStats();
+                    updateStats(); // Ensure stats are updated even if no data
                     updateSyncIndicator('', 'სინქრონიზებული');
                 }
             }, (error) => {
@@ -1124,7 +1052,12 @@
                 option.textContent = courier;
                 filterCourierSelect.appendChild(option);
             });
-            filterCourierSelect.value = currentCourierFilter; 
+            // Re-apply the previously selected courier filter if it still exists
+            if (couriers.includes(currentCourierFilter) || currentCourierFilter === '') {
+                filterCourierSelect.value = currentCourierFilter;
+            } else {
+                filterCourierSelect.value = ''; // Reset if previously selected courier is no longer in data
+            }
         }
 
         function applyFilters() {
@@ -1144,7 +1077,8 @@
                 const receiverMatch = !receiverFilter || String(item.receiver).toLowerCase().includes(receiverFilter);
                 const courierMatch = !courierFilter || item.courier === courierFilter;
                 
-                const statusMatch = currentView === 'dashboard' ? true : !statusFilter || item.status === statusFilter;
+                const statusMatch = (currentView === 'dashboard' && item.status === 'ასაგროვებელი') || // Dashboard only shows 'ასაგროვებელი'
+                                    (currentView === 'history' && (!statusFilter || item.status === statusFilter)); // History respects filter or shows all
 
                 return orderMatch && receiverMatch && courierMatch && statusMatch;
             });
@@ -1223,7 +1157,8 @@
                     ? `<td class="date-column">${item.statusChangedDate}</td>` 
                     : currentView === 'history' ? '<td class="date-column">-</td>' : '';
                 
-                const statusCell = `<span class="status-badge ${statusClass}" onclick="showStatusChangeDialog('${item.id}')">${item.status}</span>`;
+                // Changed onclick to directly call toggleStatus
+                const statusCell = `<span class="status-badge ${statusClass}" onclick="toggleStatus('${item.id}')">${item.status}</span>`;
                 const addressCell = `<td class="address-column-data">${item.address || ''}</td>`;
 
                 return `
@@ -1261,118 +1196,80 @@
                 let valA = a[currentSortKey];
                 let valB = b[currentSortKey];
 
+                // Handle null/undefined values by treating them as empty strings for comparison
+                valA = (valA === null || valA === undefined) ? '' : String(valA);
+                valB = (valB === null || valB === undefined) ? '' : String(valB);
+
                 // Special handling for numerical sort if values are numbers
-                if (!isNaN(parseFloat(valA)) && isFinite(valA) && !isNaN(parseFloat(valB)) && isFinite(valB)) {
-                    valA = parseFloat(valA);
-                    valB = parseFloat(valB);
-                } else if (typeof valA === 'string') {
+                const numA = parseFloat(valA);
+                const numB = parseFloat(valB);
+
+                if (!isNaN(numA) && isFinite(numA) && !isNaN(numB) && isFinite(numB)) {
+                    // Both are valid numbers
+                    return currentSortOrder === 'asc' ? numA - numB : numB - numA;
+                } else {
+                    // Fallback to string comparison
                     valA = valA.toLowerCase();
                     valB = valB.toLowerCase();
-                }
 
-                if (valA < valB) {
-                    return currentSortOrder === 'asc' ? -1 : 1;
+                    if (valA < valB) {
+                        return currentSortOrder === 'asc' ? -1 : 1;
+                    }
+                    if (valA > valB) {
+                        return currentSortOrder === 'asc' ? 1 : -1;
+                    }
+                    return 0;
                 }
-                if (valA > valB) {
-                    return currentSortOrder === 'asc' ? 1 : -1;
-                }
-                return 0;
             });
         }
 
-        // --- Status Change Confirmation Dialog ---
-        function showStatusChangeDialog(id) {
-            pendingStatusChangeId = id;
+        // Toggle Status function (now back to simple confirm)
+        function toggleStatus(id) {
             const item = data.find(d => d.id === id);
             if (!item) return;
 
-            const newStatus = item.status === 'ასაგროვებელი' ? 'აგროვებული' : 'ასაგროვებელი';
-            dialogTitle.textContent = `სტატუსის შეცვლა: ${item.order}`;
-            dialogMessage.textContent = `ნამდვილად გსურთ შეკვეთის სტატუსის შეცვლა "${item.status}"-დან "${newStatus}"-ზე?`;
-            
-            // Set dark mode for dialog content if body is dark mode
-            const dialogContent = statusChangeDialog.querySelector('.status-dialog-content');
-            if (document.body.classList.contains('dark-mode')) {
-                dialogContent.classList.add('dark-mode');
-            } else {
-                dialogContent.classList.remove('dark-mode');
-            }
+            const oldStatus = item.status;
+            const newStatus = oldStatus === 'ასაგროვებელი' ? 'აგროვებული' : 'ასაგროვებელი';
 
-            statusChangeDialog.classList.add('show-dialog');
-        }
+            if (confirm(`ნამდვილად გსურთ შეკვეთის სტატუსის შეცვლა "${oldStatus}"-დან "${newStatus}"-ზე?`)) {
+                updateSyncIndicator('syncing', 'სინქრონიზება...');
+                const itemRef = database.ref('orders/' + id); 
+                let newStatusChangedDate = item.statusChangedDate;
 
-        confirmStatusChangeBtn.addEventListener('click', () => {
-            if (pendingStatusChangeId) {
-                toggleStatus(pendingStatusChangeId);
-                pendingStatusChangeId = null;
-            }
-            statusChangeDialog.classList.remove('show-dialog');
-        });
-
-        cancelStatusChangeBtn.addEventListener('click', () => {
-            pendingStatusChangeId = null;
-            statusChangeDialog.classList.remove('show-dialog');
-        });
-
-        // Toggle Status function (now called from dialog confirmation)
-        function toggleStatus(id) {
-            const itemRef = database.ref('orders/' + id); 
-            itemRef.once('value').then(snapshot => {
-                const item = snapshot.val();
-                if (item) {
-                    updateSyncIndicator('syncing', 'სინქრონიზება...');
-                    const oldStatus = item.status;
-                    const newStatus = item.status === 'ასაგროვებელი' ? 'აგროვებული' : 'ასაგროვებელი';
-                    let newStatusChangedDate = item.statusChangedDate;
-
-                    if (oldStatus !== newStatus) {
-                        const now = new Date();
-                        newStatusChangedDate = now.toLocaleDateString('ka-GE') + ' ' + 
-                                               now.toLocaleTimeString('ka-GE', { hour: '2-digit', minute: '2-digit' });
-                    }
-                    
-                    itemRef.update({
-                        status: newStatus,
-                        statusChangedDate: newStatusChangedDate
-                    })
-                    .then(() => {
-                        updateSyncIndicator('', 'სინქრონიზებული');
-                        showNotification('სტატუსი წარმატებით განახლდა!');
-                        
-                        // Visual feedback (flash row)
-                        const row = document.getElementById(`order-row-${id}`);
-                        if (row) {
-                            if (newStatus === 'აგროვებული') {
-                                row.classList.add('flash-green');
-                            } else {
-                                row.classList.add('flash-yellow');
-                            }
-                            // Remove flash class after animation
-                            row.addEventListener('animationend', () => {
-                                row.classList.remove('flash-green', 'flash-yellow');
-                            }, { once: true });
-                        }
-                    })
-                    .catch(error => {
-                        console.error("Firebase Update Failed:", error);
-                        updateSyncIndicator('error', 'სტატუსის განახლების შეცდომა');
-                        showNotification('სტატუსის განახლება ვერ მოხერხდა.', 'error');
-                    });
+                if (oldStatus !== newStatus) {
+                    const now = new Date();
+                    newStatusChangedDate = now.toLocaleDateString('ka-GE') + ' ' + 
+                                           now.toLocaleTimeString('ka-GE', { hour: '2-digit', minute: '2-digit' });
                 }
-            }).catch(error => {
-                console.error("Error fetching item for toggle:", error);
-                showNotification('მონაცემების მოძიება ვერ მოხერხდა.', 'error');
-            });
+                
+                itemRef.update({
+                    status: newStatus,
+                    statusChangedDate: newStatusChangedDate
+                })
+                .then(() => {
+                    updateSyncIndicator('', 'სინქრონიზებული');
+                    showNotification('სტატუსი წარმატებით განახლდა!');
+                    // No visual flash animation for performance
+                })
+                .catch(error => {
+                    console.error("Firebase Update Failed:", error);
+                    updateSyncIndicator('error', 'სტატუსის განახლების შეცდომა');
+                    showNotification('სტატუსის განახლება ვერ მოხერხდა.', 'error');
+                });
+            }
         }
 
         // --- View Switching ---
         function switchView(view, saveToLocal = true) {
             currentView = view;
             document.querySelectorAll('.view-btn').forEach(btn => btn.classList.remove('active'));
-            // Corrected onclick attribute for view buttons to reflect saveToLocal
-            document.querySelector(`.view-toggle .view-btn[onclick="switchView('${view}', true)"]`).classList.add('active'); 
+            // Corrected selector for view buttons to ensure active class is set correctly
+            const targetButton = document.querySelector(`.view-toggle .view-btn[onclick="switchView('${view}')"]`);
+            if (targetButton) {
+                targetButton.classList.add('active');
+            }
             
-            // Reset sorting when switching views, or keep if that's desired behavior
+            // Reset sorting when switching views for consistent behavior
             currentSortKey = null;
             currentSortOrder = 'asc';
 
