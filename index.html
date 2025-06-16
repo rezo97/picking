@@ -13,6 +13,7 @@
     
     <style>
         :root {
+            /* Light Mode Colors */
             --primary-color: #4285F4; /* Google Blue */
             --primary-dark-color: #1A73E8;
             --accent-color: #34A853; /* Google Green */
@@ -21,14 +22,136 @@
             --error-color: #EA4335; /* Google Red */
             --text-color: #202124; /* Dark grey for primary text */
             --light-text-color: #5F6368; /* Medium grey for secondary text */
-            --background-light: #F8F9FA;
-            --surface-color: #FFFFFF;
+            --background-light: #F8F9FA; /* Lightest background */
+            --surface-color: #FFFFFF; /* Card/Container background */
             --border-color: #DADCE0;
             --shadow-1: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
             --shadow-2: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
             --shadow-3: 0 10px 20px rgba(0,0,0,0.19), 0 6px 6px rgba(0,0,0,0.23);
+
+            /* Dark Mode Colors (will be overridden by .dark-mode class) */
+            --dark-primary-color: #8AB4F8; /* Lighter blue for dark mode */
+            --dark-primary-dark-color: #AECBFA;
+            --dark-accent-color: #81C995;
+            --dark-accent-dark-color: #6AA87A;
+            --dark-warning-color: #FDD663;
+            --dark-error-color: #F28B82;
+            --dark-text-color: #E8EAED; /* Light grey for primary text */
+            --dark-light-text-color: #BDC1C6; /* Medium light grey for secondary text */
+            --dark-background-light: #202124; /* Darkest background */
+            --dark-surface-color: #2F3034; /* Dark card/container background */
+            --dark-border-color: #5F6368;
         }
 
+        /* Dark Mode overrides */
+        body.dark-mode {
+            background-color: var(--dark-background-light);
+            color: var(--dark-text-color);
+        }
+
+        body.dark-mode .card {
+            background-color: var(--dark-surface-color);
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.4); /* Darker shadow for dark mode */
+        }
+
+        body.dark-mode .header h1,
+        body.dark-mode .filters h3,
+        body.dark-mode .stat-card .number {
+            color: var(--dark-text-color);
+        }
+
+        body.dark-mode .light-text-color, /* For specific elements that use this */
+        body.dark-mode .stat-card h4,
+        body.dark-mode #fileName,
+        body.dark-mode .date-column,
+        body.dark-mode .filter-group label,
+        body.dark-mode th {
+            color: var(--dark-light-text-color);
+        }
+
+        body.dark-mode .sync-indicator {
+            background-color: var(--dark-accent-color);
+        }
+        body.dark-mode .sync-indicator.syncing {
+            background-color: var(--dark-warning-color);
+        }
+        body.dark-mode .sync-indicator.error {
+            background-color: var(--dark-error-color);
+        }
+
+        body.dark-mode .button-primary {
+            background-color: var(--dark-primary-color);
+        }
+        body.dark-mode .button-primary:hover {
+            background-color: var(--dark-primary-dark-color);
+        }
+
+        body.dark-mode .button-danger {
+            background-color: var(--dark-error-color);
+        }
+        body.dark-mode .button-danger:hover {
+            background-color: #CF6679; /* Darker red for dark mode hover */
+        }
+
+        body.dark-mode .view-toggle {
+            background-color: var(--dark-surface-color);
+        }
+        body.dark-mode .view-btn {
+            color: var(--dark-light-text-color);
+        }
+        body.dark-mode .view-btn.active {
+            background-color: var(--dark-primary-color);
+            color: var(--dark-text-color); /* Use dark text color for active button */
+        }
+        body.dark-mode .view-btn:hover:not(.active) {
+            background-color: #3C4043; /* Slightly lighter dark background for hover */
+            color: var(--dark-text-color);
+        }
+        
+        body.dark-mode .filter-group input, 
+        body.dark-mode .filter-group select {
+            background-color: #3C4043; /* Darker input background */
+            border-color: var(--dark-border-color);
+            color: var(--dark-text-color);
+        }
+        body.dark-mode .filter-group input:focus, 
+        body.dark-mode .filter-group select:focus {
+            border-color: var(--dark-primary-color);
+            box-shadow: 0 0 0 2px rgba(138, 180, 248, 0.2); /* Lighter focus ring */
+        }
+
+        body.dark-mode th {
+            background-color: #3C4043; /* Darker header background */
+        }
+
+        body.dark-mode tbody tr:hover {
+            background-color: rgba(138, 180, 248, 0.1); /* Lighter blue hover for dark mode */
+        }
+
+        body.dark-mode .status-collect {
+            background-color: var(--dark-warning-color);
+            color: var(--dark-text-color);
+        }
+        body.dark-mode .status-collected {
+            background-color: var(--dark-accent-color);
+            color: var(--dark-text-color);
+        }
+
+        body.dark-mode .empty-state h3 {
+            color: var(--dark-text-color);
+        }
+        body.dark-mode .empty-state p {
+            color: var(--dark-light-text-color);
+        }
+
+        body.dark-mode .notification.success {
+            background-color: var(--dark-accent-color);
+        }
+        body.dark-mode .notification.error {
+            background-color: var(--dark-error-color);
+        }
+
+        /* General styles, kept similar to previous Material Design update */
         * {
             margin: 0;
             padding: 0;
@@ -41,6 +164,7 @@
             min-height: 100vh;
             color: var(--text-color);
             line-height: 1.6;
+            transition: background-color 0.3s ease, color 0.3s ease; /* Smooth transition for theme change */
         }
 
         .container {
@@ -57,6 +181,7 @@
             border-radius: 8px;
             box-shadow: var(--shadow-1);
             padding: 24px;
+            transition: background-color 0.3s ease, box-shadow 0.3s ease; /* Smooth transition for theme change */
         }
 
         /* Header */
@@ -84,7 +209,7 @@
             font-weight: 500;
             color: var(--surface-color);
             background-color: var(--accent-color); /* Default: Synced (Green) */
-            transition: background-color 0.3s ease;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
 
         .sync-indicator.syncing {
@@ -168,7 +293,20 @@
         }
 
         .file-input-label {
-            @extend .button; /* Inherit button styles */
+            /* Using @extend is not native CSS, but indicates shared styles */
+            /* In real CSS, you'd copy these properties or use a preprocessor */
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 15px;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
+            
             background-color: var(--primary-color);
             color: white;
         }
@@ -192,6 +330,7 @@
             padding: 8px;
             box-shadow: var(--shadow-1);
             width: fit-content;
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
         }
 
         .view-btn {
@@ -225,7 +364,14 @@
         }
 
         .stat-card {
-            @extend .card; /* Inherit card styles */
+            /* Using @extend is not native CSS, but indicates shared styles */
+            /* In real CSS, you'd copy these properties or use a preprocessor */
+            background-color: var(--surface-color);
+            border-radius: 8px;
+            box-shadow: var(--shadow-1);
+            padding: 24px;
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+
             padding: 20px;
             display: flex;
             flex-direction: column;
@@ -249,7 +395,13 @@
 
         /* Filters */
         .filters {
-            @extend .card; /* Inherit card styles */
+            /* Using @extend is not native CSS, but indicates shared styles */
+            /* In real CSS, you'd copy these properties or use a preprocessor */
+            background-color: var(--surface-color);
+            border-radius: 8px;
+            box-shadow: var(--shadow-1);
+            padding: 24px;
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
         }
 
         .filters h3 {
@@ -286,7 +438,7 @@
             font-size: 15px;
             color: var(--text-color);
             background-color: var(--surface-color);
-            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.3s ease, color 0.3s ease;
             min-height: 40px; /* Ensure consistent height */
         }
 
@@ -298,7 +450,20 @@
         }
 
         .clear-filters {
-            @extend .button; /* Inherit button styles */
+            /* Using @extend is not native CSS, but indicates shared styles */
+            /* In real CSS, you'd copy these properties or use a preprocessor */
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 15px;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
+
             background-color: var(--error-color);
             color: white;
             margin-top: 10px; /* Space from filters */
@@ -309,7 +474,14 @@
 
         /* Table */
         .table-container {
-            @extend .card; /* Inherit card styles */
+            /* Using @extend is not native CSS, but indicates shared styles */
+            /* In real CSS, you'd copy these properties or use a preprocessor */
+            background-color: var(--surface-color);
+            border-radius: 8px;
+            box-shadow: var(--shadow-1);
+            padding: 24px;
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+
             padding: 0; /* Table content will have its own padding */
             overflow: hidden; /* For rounded corners */
         }
@@ -328,6 +500,7 @@
             text-align: left;
             border-bottom: 1px solid var(--border-color);
             color: var(--text-color);
+            transition: border-color 0.3s ease, color 0.3s ease;
         }
 
         th {
@@ -340,6 +513,7 @@
             position: sticky;
             top: 0;
             z-index: 10;
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
 
         tbody tr:last-child td {
@@ -347,7 +521,7 @@
         }
 
         tbody tr:hover {
-            background-color: rgba(var(--primary-color-rgb), 0.05); /* Light blue hover */
+            background-color: rgba(66, 133, 244, 0.05); /* Light blue hover */
         }
 
         /* Status Badge */
@@ -425,7 +599,8 @@
         }
         
         /* Utility for Material Design RGB colors */
-        .button-primary, .view-btn.active { --primary-color-rgb: 66, 133, 244; } /* Matches Google Blue */
+        /* Note: @extend is for preprocessors like SASS/LESS. For pure CSS, copy these properties. */
+        /* .button-primary, .view-btn.active { --primary-color-rgb: 66, 133, 244; } */
 
 
         /* Media Queries for responsiveness */
@@ -451,10 +626,14 @@
                 width: 100%;
             }
 
-            .file-input-wrapper, .clear-data-btn {
+            .file-input-wrapper, 
+            .clear-data-btn,
+            #darkModeToggle { /* Include new button */
                 width: 100%;
             }
-            .file-input-label, .clear-data-btn {
+            .file-input-label, 
+            .clear-data-btn,
+            #darkModeToggle { /* Include new button */
                 justify-content: center; /* Center button text */
                 width: 100%;
             }
@@ -503,6 +682,9 @@
                 </div>
                 <button class="button button-danger clear-data-btn" onclick="clearAllData()">
                     <i class="material-icons">delete_forever</i> მონაცემების წაშლა
+                </button>
+                <button id="darkModeToggle" class="button button-primary" onclick="toggleDarkMode()">
+                    <i class="material-icons" id="darkModeIcon">dark_mode</i> ბნელი რეჟიმი
                 </button>
                 <span id="fileName"></span>
             </div>
@@ -613,6 +795,40 @@
         let filteredData = [];
         let currentView = 'dashboard';
         
+        // --- Dark Mode Logic ---
+        const darkModeToggleBtn = document.getElementById('darkModeToggle');
+        const darkModeIcon = document.getElementById('darkModeIcon');
+
+        function setDarkMode(isDark) {
+            if (isDark) {
+                document.body.classList.add('dark-mode');
+                darkModeIcon.textContent = 'light_mode'; // Change icon to sun
+                darkModeToggleBtn.querySelector('span').textContent = 'ნათელი რეჟიმი'; // Change text
+                localStorage.setItem('theme', 'dark');
+            } else {
+                document.body.classList.remove('dark-mode');
+                darkModeIcon.textContent = 'dark_mode'; // Change icon to moon
+                darkModeToggleBtn.querySelector('span').textContent = 'ბნელი რეჟიმი'; // Change text
+                localStorage.setItem('theme', 'light');
+            }
+        }
+
+        function toggleDarkMode() {
+            const isCurrentlyDark = document.body.classList.contains('dark-mode');
+            setDarkMode(!isCurrentlyDark);
+        }
+
+        // Check for saved theme on load
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark') {
+                setDarkMode(true);
+            } else {
+                setDarkMode(false); // Ensure light mode is default if no preference or 'light' is saved
+            }
+        });
+        // --- End Dark Mode Logic ---
+
         // Load data from Firebase on page load and listen for changes
         window.addEventListener('load', function() {
             listenForFirebaseChanges();
