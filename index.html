@@ -680,7 +680,7 @@
                         <i class="material-icons">upload_file</i> Excel ფაილის ატვირთვა
                     </label>
                 </div>
-                <button class="button button-danger clear-data-btn" onclick="clearAllData()">
+                <button class="button button-danger clear-data-btn" onclick="promptForClearData()">
                     <i class="material-icons">delete_forever</i> მონაცემების წაშლა
                 </button>
                 <button id="darkModeToggle" class="button button-primary" onclick="toggleDarkMode()">
@@ -1098,6 +1098,19 @@
             }, 3000);
         }
 
+        // --- New code for protected clearAllData ---
+        const ADMIN_CODE = "321321"; // Define the secret code
+
+        function promptForClearData() {
+            const enteredCode = prompt('გთხოვთ, შეიყვანოთ ადმინისტრატორის კოდი მონაცემების წასაშლელად:');
+            if (enteredCode === ADMIN_CODE) {
+                clearAllData(); // Call the actual clear function if code is correct
+            } else if (enteredCode !== null) { // If user didn't cancel the prompt
+                showNotification('არასწორი კოდი. მონაცემები არ წაიშალა.', 'error');
+            }
+            // If enteredCode is null, user clicked "Cancel", so do nothing.
+        }
+
         function clearAllData() {
             if (confirm('ნამდვილად გსურთ ყველა მონაცემის წაშლა? ეს ქმედება შეუქცევადია. ეს წაშლის მონაცემებს ყველა დაკავშირებულ მოწყობილობაზე!')) {
                 updateSyncIndicator('syncing', 'მონაცემების წაშლა...');
@@ -1114,6 +1127,7 @@
                     });
             }
         }
+        // --- End of new code ---
     </script>
 </body>
 </html>
