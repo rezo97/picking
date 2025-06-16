@@ -64,10 +64,17 @@
         body.dark-mode .stat-card h4,
         body.dark-mode #fileName,
         body.dark-mode .date-column,
-        body.dark-mode .filter-group label,
         body.dark-mode th {
             color: var(--dark-light-text-color);
         }
+
+        /* NEW: Dark mode for filter labels */
+        body.dark-mode .filter-group label,
+        body.dark-mode .address-toggle-group label {
+            color: var(--dark-text-color); /* Make labels brighter in dark mode */
+            font-weight: 700; /* Ensure boldness */
+        }
+
 
         body.dark-mode .sync-indicator {
             background-color: var(--dark-accent-color);
@@ -160,9 +167,9 @@
         }
 
         .address-toggle-group label {
-            font-weight: 500;
-            color: var(--light-text-color);
-            font-size: 14px;
+            font-weight: 700; /* Make it bold */
+            color: var(--light-text-color); /* Kept same as other labels for light mode */
+            font-size: 15px; /* Slightly larger */
             cursor: pointer;
         }
 
@@ -445,10 +452,10 @@
         }
 
         .filter-group label {
-            font-weight: 500;
+            font-weight: 700; /* Make it bold */
             margin-bottom: 8px;
-            color: var(--light-text-color);
-            font-size: 14px;
+            color: var(--light-text-color); /* Kept same as other labels for light mode */
+            font-size: 15px; /* Slightly larger */
         }
 
         .filter-group input, 
@@ -775,7 +782,7 @@
                             <th>შეკვეთა</th>
                             <th>მიმღები</th>
                             <th>მისამართი</th> <th>კურიერი</th>
-                            <th>თარო</th>
+                            <th>ტემპი</th>
                             <th>სტატუსი</th>
                         </tr>
                     </thead>
@@ -804,22 +811,20 @@
             storageBucket: "picking-2da5d.firebasestorage.app",
             messagingSenderId: "985054920430",
             appId: "1:985054920430:web:2e49cd2b1ebbab9ba23dff",
-            measurementId: "G-ZEJHW847HT" // ეს არ გამოიყენება ამ კოდში, მაგრამ არ წაშალოთ
+            measurementId: "G-ZEJHW847HT" 
         };
         // *** დასრულდა Firebase კონფიგურაციის ადგილი ***
 
-        // Firebase-ის ინიციალიზაცია
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
-        const ordersRef = database.ref('orders'); // Root node for your orders
+        const ordersRef = database.ref('orders'); 
 
         let data = []; 
         let filteredData = [];
         let currentView = 'dashboard';
-        // New: Track address column visibility
         let showAddressColumn = true; 
         
-        // --- Dark Mode Logic (unchanged from previous) ---
+        // --- Dark Mode Logic ---
         const darkModeToggleBtn = document.getElementById('darkModeToggle');
         const darkModeIcon = document.getElementById('darkModeIcon');
 
@@ -842,7 +847,7 @@
             setDarkMode(!isCurrentlyDark);
         }
 
-        // --- Address Column Toggle Logic (NEW) ---
+        // --- Address Column Toggle Logic ---
         const toggleAddressCheckbox = document.getElementById('toggleAddressColumn');
         const tableContainer = document.getElementById('tableContainer');
 
@@ -853,14 +858,11 @@
             } else {
                 tableContainer.classList.add('hide-address');
             }
-            // Re-render table to update headers/cells immediately
             renderTable(); 
-            localStorage.setItem('showAddressColumn', showAddressColumn); // Save preference
+            localStorage.setItem('showAddressColumn', showAddressColumn); 
         }
 
-        // Initialize address column state on load
         window.addEventListener('DOMContentLoaded', () => {
-            // Dark mode initialization
             const savedTheme = localStorage.getItem('theme');
             if (savedTheme === 'dark') {
                 setDarkMode(true);
@@ -868,23 +870,21 @@
                 setDarkMode(false); 
             }
 
-            // Address column initialization
             const savedAddressColumnPreference = localStorage.getItem('showAddressColumn');
             if (savedAddressColumnPreference !== null) {
                 showAddressColumn = (savedAddressColumnPreference === 'true');
                 toggleAddressCheckbox.checked = showAddressColumn;
             } else {
-                showAddressColumn = true; // Default to showing if no preference
+                showAddressColumn = true; 
                 toggleAddressCheckbox.checked = true;
             }
-            updateAddressColumnVisibility(); // Apply initial state
+            updateAddressColumnVisibility(); 
         });
 
         toggleAddressCheckbox.addEventListener('change', updateAddressColumnVisibility);
         // --- End Address Column Toggle Logic ---
 
 
-        // Load data from Firebase on page load and listen for changes
         window.addEventListener('load', function() {
             listenForFirebaseChanges();
         });
@@ -897,7 +897,6 @@
             statusText.textContent = message;
         }
 
-        // Listen for changes in Firebase Realtime Database
         function listenForFirebaseChanges() {
             updateSyncIndicator('syncing', 'სინქრონიზება...');
             ordersRef.on('value', (snapshot) => {
@@ -905,7 +904,8 @@
                 if (firebaseData) {
                     data = Object.values(firebaseData);
                     populateCourierFilter();
-                    applyFilters();
+                    // IMPORTANT FIX: Call applyFilters here to re-apply filters after data update
+                    applyFilters(); 
                     updateStats();
                     updateSyncIndicator('', 'სინქრონიზებული');
                 } else {
@@ -922,7 +922,6 @@
             });
         }
 
-        // Excel file upload
         document.getElementById('fileInput').addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (!file) return;
@@ -948,7 +947,6 @@
             reader.readAsBinaryString(file);
         });
 
-        // Process data and upload to Firebase (UPDATED for 'address')
         function processAndUploadData(jsonData) {
             const newData = {};
             jsonData.forEach((row) => {
@@ -959,9 +957,9 @@
                     id: id,
                     order: String(row['შეკვეთა'] || row['Order'] || '').trim(),
                     receiver: String(row['მიმღები'] || row['Receiver'] || '').trim(),
-                    address: String(row['მისამართი'] || row['Address'] || '').trim(), // NEW: Address field
+                    address: String(row['მისამართი'] || row['Address'] || '').trim(), 
                     courier: String(row['კურიერი'] || row['Courier'] || '').trim(),
-                    type: String(row['თარო'] || row['Type'] || '').trim(),
+                    type: String(row['ტემპი'] || row['Type'] || '').trim(),
                     status: 'ასაგროვებელი',
                     statusChangedDate: null
                 };
@@ -982,6 +980,8 @@
         function populateCourierFilter() {
             const couriers = [...new Set(data.map(item => item.courier))].filter(Boolean).sort();
             const courierSelect = document.getElementById('filterCourier');
+            const currentCourierFilter = courierSelect.value; // Save current selection
+
             courierSelect.innerHTML = '<option value="">ყველა კურიერი</option>';
             couriers.forEach(courier => {
                 const option = document.createElement('option');
@@ -989,9 +989,9 @@
                 option.textContent = courier;
                 courierSelect.appendChild(option);
             });
+            courierSelect.value = currentCourierFilter; // Restore previous selection
         }
 
-        // Render Table (UPDATED for 'address' and dynamic headers)
         function renderTable() {
             const tbody = document.getElementById('tableBody');
             const header = document.getElementById('tableHeader');
@@ -999,12 +999,13 @@
             let headersHtml = `
                 <th>შეკვეთა</th>
                 <th>მიმღები</th>
-                <th class="address-column-header">მისამართი</th> <th>კურიერი</th>
-                <th>თარო</th>
+                <th class="address-column-header">მისამართი</th> 
+                <th>კურიერი</th>
+                <th>ტემპი</th>
                 <th>სტატუსი</th>
             `;
 
-            let colspan = 6; // Default colspan for empty state
+            let colspan = 6; 
 
             if (currentView === 'history') {
                 headersHtml += `<th>შეცვლის თარიღი</th>`;
@@ -1012,13 +1013,6 @@
             }
 
             header.innerHTML = headersHtml;
-
-            // Apply visibility based on showAddressColumn flag
-            if (!showAddressColumn) {
-                // If address column should be hidden, we dynamically hide it with CSS class
-                // This is redundant with the .hide-address class on tableContainer, but useful if we need to target specific <th>/<td>
-                // For now, the .hide-address on tableContainer handles it
-            }
 
             if (filteredData.length === 0) {
                 const message = data.length === 0 ?
@@ -1042,14 +1036,14 @@
                 
                 const statusCell = `<span class="status-badge ${statusClass}" onclick="toggleStatus('${item.id}')">${item.status}</span>`;
                 
-                // New: Address data cell with class for targeting
                 const addressCell = `<td class="address-column-data">${item.address || ''}</td>`;
 
                 return `
                     <tr>
                         <td>${item.order}</td>
                         <td>${item.receiver}</td>
-                        ${addressCell} <td>${item.courier}</td>
+                        ${addressCell} 
+                        <td>${item.courier}</td>
                         <td>${item.type}</td>
                         <td>${statusCell}</td>
                         ${dateColumn}
@@ -1079,6 +1073,8 @@
                         statusChangedDate: newStatusChangedDate
                     })
                     .then(() => {
+                        // Data will be re-rendered by the 'onValue' listener.
+                        // The 'onValue' listener now correctly calls applyFilters() to preserve filters.
                         updateSyncIndicator('', 'სინქრონიზებული');
                     })
                     .catch(error => {
