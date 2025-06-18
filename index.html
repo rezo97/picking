@@ -1084,7 +1084,7 @@
                                 <th>შეკვეთა</th>
                                 <th>მიმღები</th>
                                 <th class="address-column-header">მისამართი</th> <th>კურიერი</th>
-                                <th>ტემპი</th>
+                                <th>თარო</th>
                                 <th>სტატუსი</th>
                             </tr>
                         </thead>
@@ -1147,7 +1147,7 @@
                                 <th>შეკვეთა</th>
                                 <th>მიმღები</th>
                                 <th class="address-column-header">მისამართი</th> <th>კურიერი</th>
-                                <th>ტემპი</th>
+                                <th>თარო</th>
                                 <th>სტატუსი</th>
                                 <th>შეცვლის თარიღი</th>
                             </tr>
@@ -1235,7 +1235,7 @@
                                 <th>აგროვების დრო</th>
                                 <th>მიმღები</th>
                                 <th class="address-column-header">მისამართი</th> <th>კურიერი</th>
-                                <th>ტემპი</th>
+                                <th>თარო</th>
                                 <th>სტატუსი</th>
                             </tr>
                         </thead>
@@ -1289,7 +1289,7 @@
                                 <th>შეკვეთა</th>
                                 <th>მიმღები</th>
                                 <th class="address-column-header">მისამართი</th> <th>კურიერი</th>
-                                <th>ტემპი</th>
+                                <th>თარო</th>
                                 <th>სტატუსი</th>
                                 <th>შემოსვლის თარიღი</th>
                                 <th>კომენტარი</th> <!-- NEW COLUMN -->
@@ -1583,7 +1583,7 @@
                         existingItem.receiver = String(row['მიმღები'] || row['Receiver'] || '').trim();
                         existingItem.address = String(row['მისამართი'] || row['Address'] || '').trim();
                         existingItem.courier = String(row['კურიერი'] || row['Courier'] || '').trim();
-                        existingItem.type = String(row['ტემპი'] || row['Type'] || '').trim();
+                        existingItem.type = String(row['თარო'] || row['Type'] || '').trim();
                         // Status, statusChangedDate, comment are NOT updated here to preserve manual changes
                         if (existingItem.uploadDate === undefined || existingItem.uploadDate === null) {
                             existingItem.uploadDate = now; // Set uploadDate only if it's missing for old data
@@ -1604,7 +1604,7 @@
                             receiver: String(row['მიმღები'] || row['Receiver'] || '').trim(),
                             address: String(row['მისამართი'] || row['Address'] || '').trim(), 
                             courier: String(row['კურიერი'] || row['Courier'] || '').trim(),
-                            type: String(row['ტემპი'] || row['Type'] || '').trim(),
+                            type: String(row['თარო'] || row['Type'] || '').trim(),
                             status: 'ასაგროვებელი', // Default status for new orders
                             statusChangedDate: null,
                             uploadDate: now, // Set upload date for new orders
@@ -1739,7 +1739,7 @@
                     <th>მიმღები</th>
                     <th class="${addressColumnVisible ? '' : 'address-column-header'}">მისამართი</th> 
                     <th>კურიერი</th>
-                    <th>ტემპი</th>
+                    <th>თარო</th>
                     <th>სტატუსი</th>
                 `;
                 if (currentView === 'history') {
@@ -1755,7 +1755,7 @@
                     <th>მიმღები</th>
                     <th class="${addressColumnVisible ? '' : 'address-column-header'}">მისამართი</th> 
                     <th>კურიერი</th>
-                    <th>ტემპი</th>
+                    <th>თარო</th>
                     <th>სტატუსი</th>
                 `;
             }
