@@ -701,8 +701,9 @@
             border-collapse: collapse;
         }
 
+        /* Adjusted padding for larger records */
         th, td {
-            padding: 16px 24px;
+            padding: 18px 24px; /* Increased vertical padding */
             text-align: left;
             border-bottom: 1px solid var(--border-color);
             color: var(--text-color);
@@ -730,13 +731,13 @@
             background-color: rgba(66, 133, 244, 0.05); /* Light blue hover */
         }
 
-        /* Status Badge */
+        /* Status Badge (retained for non-dropdown statuses or when not in editable view) */
         .status-badge {
             padding: 8px 16px;
             border-radius: 20px;
             font-size: 13px;
             font-weight: 600;
-            cursor: pointer; /* Keep cursor pointer for clickable items not dropdowns */
+            cursor: default; /* Changed to default as it's no longer directly clickable to change status */
             transition: all 0.2s ease;
             display: inline-block;
             min-width: 120px;
@@ -760,10 +761,12 @@
             color: white;
         }
 
+        /* No hover transform for static badges */
         .status-badge:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-2);
+            transform: none;
+            box-shadow: var(--shadow-1); /* Retain original shadow */
         }
+
 
         .date-column {
             font-size: 13px;
@@ -809,8 +812,6 @@
         }
 
         /* NEW: Address Column Hide/Unhide CSS */
-        /* These rules will hide the address column elements IF they have these classes */
-        /* These classes are conditionally applied in renderTable when the checkbox is unchecked */
         .address-column-header,
         .address-column-data {
             display: none !important; /* Important to override default table display */
@@ -818,40 +819,84 @@
 
         /* NEW: Status Dropdown Styling */
         .status-dropdown {
-            padding: 6px 12px;
+            padding: 8px 16px; /* Match status badge padding */
             border: 1px solid var(--border-color);
-            border-radius: 4px;
+            border-radius: 20px; /* Match status badge border-radius */
             font-size: 13px;
-            font-weight: 500;
-            background-color: var(--surface-color);
-            color: var(--text-color);
+            font-weight: 600; /* Match status badge font-weight */
             cursor: pointer;
             transition: all 0.2s ease;
-            min-width: 120px; /* Match status badge width */
+            display: inline-block; /* Ensure it behaves like a badge */
+            min-width: 120px; 
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: var(--shadow-1); /* Apply shadow */
+
             appearance: none; /* Remove default select arrow */
-            background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23${encodeURIComponent(var(--light-text-color).substring(1))}%22%20d%3D%22M287%2C146.2L146.2%2C287c-4.4%2C4.4-11.4%2C4.4-15.8%2C0L0%2C146.2c-4.4-4.4-4.4-11.4%2C0-15.8c4.4-4.4%2C11.4-4.4%2C15.8%2C0l122.6%2C122.6L271.2%2C130.4c4.4-4.4%2C11.4-4.4%2C15.8%2C0C291.4%2C134.8%2C291.4%2C141.8%2C287%2C146.2z%22%2F%3E%3C%2Fsvg%3E'); /* Custom arrow */
+            -webkit-appearance: none;
+            -moz-appearance: none;
             background-repeat: no-repeat;
-            background-position: right 8px center;
-            background-size: 12px;
+            background-position: right 8px center; /* Position custom arrow */
+            background-size: 12px; /* Size custom arrow */
+            
+            /* Dynamic background image for arrow color based on theme */
+            background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%235F6368%22%20d%3D%22M287%2C146.2L146.2%2C287c-4.4%2C4.4-11.4%2C4.4-15.8%2C0L0%2C146.2c-4.4-4.4-4.4-11.4%2C0-15.8c4.4-4.4%2C11.4-4.4%2C15.8%2C0l122.6%2C122.6L271.2%2C130.4c4.4-4.4%2C11.4-4.4%2C15.8%2C0C291.4%2C134.8%2C291.4%2C141.8%2C287%2C146.2z%22%2F%3E%3C%2Fsvg%3E');
         }
-        /* Color the arrow for light/dark mode */
+
         body.dark-mode .status-dropdown {
-            background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23${encodeURIComponent(var(--dark-light-text-color).substring(1))}%22%20d%3D%22M287%2C146.2L146.2%2C287c-4.4%2C4.4-11.4%2C4.4-15.8%2C0L0%2C146.2c-4.4-4.4-4.4-11.4%2C0-15.8c4.4-4.4%2C11.4-4.4%2C15.8%2C0l122.6%2C122.6L271.2%2C130.4c4.4-4.4%2C11.4-4.4%2C15.8%2C0C291.4%2C134.8%2C291.4%2C141.8%2C287%2C146.2z%22%2F%3E%3C%2Fsvg%3E');
+            background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23BDC1C6%22%20d%3D%22M287%2C146.2L146.2%2C287c-4.4%2C4.4-11.4%2C4.4-15.8%2C0L0%2C146.2c-4.4-4.4-4.4-11.4%2C0-15.8c4.4-4.4%2C11.4-4.4%2C15.8%2C0l122.6%2C122.6L271.2%2C130.4c4.4-4.4%2C11.4-4.4%2C15.8%2C0C291.4%2C134.8%2C291.4%2C141.8%2C287%2C146.2z%22%2F%3E%3C%2Fsvg%3E');
         }
 
         .status-dropdown:hover {
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.2);
+            transform: translateY(-2px); /* Lift on hover */
+            box-shadow: var(--shadow-2); /* Deeper shadow on hover */
+        }
+        /* Specific status colors for dropdowns */
+        .status-collect.status-dropdown {
+            background-color: var(--warning-color);
+            color: var(--text-color); /* Dark text for yellow background */
+            border-color: var(--warning-color); /* Match border to background */
         }
 
-        body.dark-mode .status-dropdown {
-            background-color: #3C4043;
-            border-color: var(--dark-border-color);
+        .status-collected.status-dropdown {
+            background-color: var(--accent-color);
+            color: white;
+            border-color: var(--accent-color);
+        }
+        .status-problematic.status-dropdown {
+            background-color: var(--error-color); /* Red for problematic */
+            color: white;
+            border-color: var(--error-color);
+        }
+
+        body.dark-mode .status-collect.status-dropdown {
+            background-color: var(--dark-warning-color);
+            color: var(--dark-text-color);
+            border-color: var(--dark-warning-color);
+        }
+        body.dark-mode .status-collected.status-dropdown {
+            background-color: var(--dark-accent-color);
+            color: var(--dark-text-color);
+            border-color: var(--dark-accent-color);
+        }
+        body.dark-mode .status-problematic.status-dropdown {
+            background-color: var(--dark-error-color);
+            color: var(--dark-text-color);
+            border-color: var(--dark-error-color);
+        }
+
+        /* Ensure options within dropdown are styled for readability */
+        .status-dropdown option {
+            background-color: var(--surface-color);
+            color: var(--text-color);
+        }
+        body.dark-mode .status-dropdown option {
+            background-color: var(--dark-surface-color);
             color: var(--dark-text-color);
         }
         body.dark-mode .status-dropdown:hover {
-            border-color: var(--dark-primary-color);
-            box-shadow: 0 0 0 2px rgba(138, 180, 248, 0.2);
+            /* No specific dark mode hover for border/shadow as it's handled by generic .status-dropdown:hover */
         }
 
         /* Media Queries for responsiveness */
@@ -910,7 +955,7 @@
             }
 
             th, td {
-                padding: 12px 16px;
+                padding: 14px 16px; /* Slightly reduced padding for mobile */
             }
             
             .status-badge, .status-dropdown { /* Apply to dropdown too */
@@ -1592,7 +1637,8 @@
             courierSelects.forEach(selectId => {
                 const selectElement = document.getElementById(selectId);
                 if (selectElement) {
-                    const currentCourierFilter = filterValues[selectId.replace('filterCourier', '').toLowerCase() || 'dashboard'].courier; // Get current value from filterValues
+                    const currentViewKey = selectId.replace('filterCourier', '').toLowerCase() || 'dashboard';
+                    const currentCourierFilter = filterValues[currentViewKey].courier; 
                     selectElement.innerHTML = '<option value="">ყველა კურიერი</option>';
                     couriers.forEach(courier => {
                         const option = document.createElement('option');
@@ -1756,7 +1802,7 @@
                             <option value="პრობლემური" ${item.status === 'პრობლემური' ? 'selected' : ''}>პრობლემური</option>
                         </select>
                     `;
-                } else if (currentView === 'problematic' && item.status === 'პრობლემური') {
+                } else if (currentView === 'problematic') { // Always show dropdown in problematic view
                      statusCellContent = `
                         <select onchange="handleStatusChangeDropdown(this, '${item.id}', '${item.status}')" class="status-dropdown ${statusClass}">
                             <option value="პრობლემური" ${item.status === 'პრობლემური' ? 'selected' : ''}>პრობლემური</option>
@@ -1764,8 +1810,17 @@
                             <option value="აგროვებული" ${item.status === 'აგროვებული' ? 'selected' : ''}>აგროვებული</option>
                         </select>
                     `;
-                } else {
-                    // Default for history, data, or items not eligible for dropdown (e.g., collected on dashboard)
+                } else if (currentView === 'history') { // Also show dropdown in history view
+                     statusCellContent = `
+                        <select onchange="handleStatusChangeDropdown(this, '${item.id}', '${item.status}')" class="status-dropdown ${statusClass}">
+                            <option value="აგროვებული" ${item.status === 'აგროვებული' ? 'selected' : ''}>აგროვებული</option>
+                            <option value="ასაგროვებელი" ${item.status === 'ასაგროვებელი' ? 'selected' : ''}>ასაგროვებელი</option>
+                            <option value="პრობლემური" ${item.status === 'პრობლემური' ? 'selected' : ''}>პრობლემური</option>
+                        </select>
+                    `;
+                }
+                else {
+                    // Default for data view, or if not eligible for dropdown
                     statusCellContent = `<span class="status-badge ${statusClass}">${item.status}</span>`;
                 }
 
@@ -1832,24 +1887,29 @@
                 return; // No change, do nothing
             }
 
-            let confirmationMessage = '';
+            let confirmationNeeded = true;
             let commentText = null;
 
-            if (newStatus === 'პრობლემური') {
+            if (currentView === 'dashboard' && oldStatus === 'ასაგროვებელი') {
+                // Point 3: No popup needed for any change from "ასაგროვებელი" on dashboard
+                confirmationNeeded = false;
+                if (newStatus === 'პრობლემური') {
+                    commentText = prompt('გთხოვთ, შეიყვანოთ კომენტარი პრობლემური შეკვეთისთვის:');
+                    if (commentText === null) { // User cancelled the comment prompt
+                        selectElement.value = oldStatus; // Revert dropdown
+                        return; 
+                    }
+                }
+            } else if (newStatus === 'პრობლემური' && currentView !== 'dashboard') { // Prompt for comment if switching TO problematic from history/data
                 commentText = prompt('გთხოვთ, შეიყვანოთ კომენტარი პრობლემური შეკვეთისთვის:');
                 if (commentText === null) { // User cancelled the comment prompt
                     selectElement.value = oldStatus; // Revert dropdown
                     return; 
                 }
-                confirmationMessage = `ნამდვილად გსურთ სტატუსის "${oldStatus}"-დან "პრობლემური"-ზე შეცვლა?`;
-            } else if (oldStatus === 'ასაგროვებელი' && newStatus === 'აგროვებული') {
-                // No confirmation needed as per user's point 1
-                confirmationMessage = null; // No confirmation popup
-            } else {
-                confirmationMessage = `ნამდვილად გსურთ სტატუსის "${oldStatus}"-დან "${newStatus}"-ზე შეცვლა?`;
             }
 
-            if (confirmationMessage && !confirm(confirmationMessage)) {
+
+            if (confirmationNeeded && !confirm(`ნამდვილად გსურთ სტატუსის "${oldStatus}"-დან "${newStatus}"-ზე შეცვლა?`)) {
                 selectElement.value = oldStatus; // Revert dropdown
                 return; // User cancelled the action
             }
