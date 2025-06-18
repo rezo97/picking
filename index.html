@@ -736,7 +736,7 @@
             border-radius: 20px;
             font-size: 13px;
             font-weight: 600;
-            cursor: pointer;
+            cursor: pointer; /* Keep cursor pointer for clickable items not dropdowns */
             transition: all 0.2s ease;
             display: inline-block;
             min-width: 120px;
@@ -807,7 +807,53 @@
         .notification.error {
             background-color: var(--error-color);
         }
-        
+
+        /* NEW: Address Column Hide/Unhide CSS */
+        /* These rules will hide the address column elements IF they have these classes */
+        /* These classes are conditionally applied in renderTable when the checkbox is unchecked */
+        .address-column-header,
+        .address-column-data {
+            display: none !important; /* Important to override default table display */
+        }
+
+        /* NEW: Status Dropdown Styling */
+        .status-dropdown {
+            padding: 6px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: 500;
+            background-color: var(--surface-color);
+            color: var(--text-color);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            min-width: 120px; /* Match status badge width */
+            appearance: none; /* Remove default select arrow */
+            background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23${encodeURIComponent(var(--light-text-color).substring(1))}%22%20d%3D%22M287%2C146.2L146.2%2C287c-4.4%2C4.4-11.4%2C4.4-15.8%2C0L0%2C146.2c-4.4-4.4-4.4-11.4%2C0-15.8c4.4-4.4%2C11.4-4.4%2C15.8%2C0l122.6%2C122.6L271.2%2C130.4c4.4-4.4%2C11.4-4.4%2C15.8%2C0C291.4%2C134.8%2C291.4%2C141.8%2C287%2C146.2z%22%2F%3E%3C%2Fsvg%3E'); /* Custom arrow */
+            background-repeat: no-repeat;
+            background-position: right 8px center;
+            background-size: 12px;
+        }
+        /* Color the arrow for light/dark mode */
+        body.dark-mode .status-dropdown {
+            background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23${encodeURIComponent(var(--dark-light-text-color).substring(1))}%22%20d%3D%22M287%2C146.2L146.2%2C287c-4.4%2C4.4-11.4%2C4.4-15.8%2C0L0%2C146.2c-4.4-4.4-4.4-11.4%2C0-15.8c4.4-4.4%2C11.4-4.4%2C15.8%2C0l122.6%2C122.6L271.2%2C130.4c4.4-4.4%2C11.4-4.4%2C15.8%2C0C291.4%2C134.8%2C291.4%2C141.8%2C287%2C146.2z%22%2F%3E%3C%2Fsvg%3E');
+        }
+
+        .status-dropdown:hover {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.2);
+        }
+
+        body.dark-mode .status-dropdown {
+            background-color: #3C4043;
+            border-color: var(--dark-border-color);
+            color: var(--dark-text-color);
+        }
+        body.dark-mode .status-dropdown:hover {
+            border-color: var(--dark-primary-color);
+            box-shadow: 0 0 0 2px rgba(138, 180, 248, 0.2);
+        }
+
         /* Media Queries for responsiveness */
         @media (max-width: 768px) {
             .container {
@@ -867,7 +913,7 @@
                 padding: 12px 16px;
             }
             
-            .status-badge {
+            .status-badge, .status-dropdown { /* Apply to dropdown too */
                 min-width: unset;
                 padding: 6px 12px;
                 font-size: 12px;
@@ -992,7 +1038,7 @@
                             <tr id="tableHeaderDashboard">
                                 <th>შეკვეთა</th>
                                 <th>მიმღები</th>
-                                <th>მისამართი</th> <th>კურიერი</th>
+                                <th class="address-column-header">მისამართი</th> <th>კურიერი</th>
                                 <th>ტემპი</th>
                                 <th>სტატუსი</th>
                             </tr>
@@ -1055,7 +1101,7 @@
                             <tr id="tableHeaderHistory">
                                 <th>შეკვეთა</th>
                                 <th>მიმღები</th>
-                                <th>მისამართი</th> <th>კურიერი</th>
+                                <th class="address-column-header">მისამართი</th> <th>კურიერი</th>
                                 <th>ტემპი</th>
                                 <th>სტატუსი</th>
                                 <th>შეცვლის თარიღი</th>
@@ -1143,7 +1189,7 @@
                                 <th>შეკვეთის ატვირთვის დრო</th>
                                 <th>აგროვების დრო</th>
                                 <th>მიმღები</th>
-                                <th>მისამართი</th> <th>კურიერი</th>
+                                <th class="address-column-header">მისამართი</th> <th>კურიერი</th>
                                 <th>ტემპი</th>
                                 <th>სტატუსი</th>
                             </tr>
@@ -1197,7 +1243,7 @@
                             <tr id="tableHeaderProblematic">
                                 <th>შეკვეთა</th>
                                 <th>მიმღები</th>
-                                <th>მისამართი</th> <th>კურიერი</th>
+                                <th class="address-column-header">მისამართი</th> <th>კურიერი</th>
                                 <th>ტემპი</th>
                                 <th>სტატუსი</th>
                                 <th>შემოსვლის თარიღი</th>
@@ -1254,6 +1300,15 @@
         let data = []; 
         let filteredData = [];
         let currentView = 'dashboard';
+
+        // Variables to store filter values for each view
+        let filterValues = {
+            dashboard: { order: '', receiver: '', courier: '', status: '' },
+            history: { order: '', receiver: '', courier: '', status: '' },
+            data: { order: '', receiver: '', courier: '', status: '', startDate: '', endDate: '', filterByUploadDate: true, filterByCollectionDate: false },
+            problematic: { order: '', receiver: '', courier: '' }
+        };
+
         let showAddressColumnDashboard = true;
         let showAddressColumnHistory = true;
         let showAddressColumnData = true;
@@ -1262,7 +1317,7 @@
         // --- Dark Mode Logic ---
         const darkModeToggleBtn = document.getElementById('darkModeToggle');
         const darkModeIcon = document.getElementById('darkModeIcon');
-        const darkModeText = document.getElementById('darkModeText'); // Get the span for text
+        const darkModeText = document.getElementById('darkModeText'); 
 
         function setDarkMode(isDark) {
             if (isDark) {
@@ -1301,12 +1356,12 @@
             showAddressColumnData = toggleAddressCheckboxData.checked;
             showAddressColumnProblematic = toggleAddressCheckboxProblematic.checked;
 
-            if (showAddressColumnDashboard) { dashboardViewContainer.classList.remove('hide-address'); } else { dashboardViewContainer.classList.add('hide-address'); }
-            if (showAddressColumnHistory) { historyViewContainer.classList.remove('hide-address'); } else { historyViewContainer.classList.add('hide-address'); }
-            if (showAddressColumnData) { dataViewContainer.classList.remove('hide-address'); } else { dataViewContainer.classList.add('hide-address'); }
-            if (showAddressColumnProblematic) { problematicViewContainer.classList.remove('hide-address'); } else { problematicViewContainer.classList.add('hide-address'); }
+            // Apply/remove classes to the address column headers and data cells directly
+            // when renderTable is called, it will apply 'address-column-header' and 'address-column-data'
+            // if the respective showAddressColumn variable is false.
+            // The CSS then hides these elements based on those classes.
+            renderTable(); 
 
-            renderTable(); // Re-render table for current view to apply visibility
             localStorage.setItem('showAddressColumnDashboard', showAddressColumnDashboard);
             localStorage.setItem('showAddressColumnHistory', showAddressColumnHistory);
             localStorage.setItem('showAddressColumnData', showAddressColumnData);
@@ -1321,17 +1376,52 @@
                 setDarkMode(false); 
             }
 
-            showAddressColumnDashboard = (localStorage.getItem('showAddressColumnDashboard') === 'true' || localStorage.getItem('showAddressColumnDashboard') === null);
-            showAddressColumnHistory = (localStorage.getItem('showAddressColumnHistory') === 'true' || localStorage.getItem('showAddressColumnHistory') === null);
-            showAddressColumnData = (localStorage.getItem('showAddressColumnData') === 'true' || localStorage.getItem('showAddressColumnData') === null);
-            showAddressColumnProblematic = (localStorage.getItem('showAddressColumnProblematic') === 'true' || localStorage.getItem('showAddressColumnProblematic') === null);
+            // Load saved visibility settings
+            showAddressColumnDashboard = (localStorage.getItem('showAddressColumnDashboard') !== 'false');
+            showAddressColumnHistory = (localStorage.getItem('showAddressColumnHistory') !== 'false');
+            showAddressColumnData = (localStorage.getItem('showAddressColumnData') !== 'false');
+            showAddressColumnProblematic = (localStorage.getItem('showAddressColumnProblematic') !== 'false');
 
             toggleAddressCheckboxDashboard.checked = showAddressColumnDashboard;
             toggleAddressCheckboxHistory.checked = showAddressColumnHistory;
             toggleAddressCheckboxData.checked = showAddressColumnData;
             toggleAddressCheckboxProblematic.checked = showAddressColumnProblematic;
             
-            updateAddressColumnVisibility(); 
+            // Load saved filter values
+            try {
+                const savedFilters = localStorage.getItem('filterValues');
+                if (savedFilters) {
+                    filterValues = JSON.parse(savedFilters);
+                }
+            } catch (e) {
+                console.error("Error loading saved filters:", e);
+            }
+
+            // Initialize filter inputs with loaded values
+            document.getElementById('filterOrder').value = filterValues.dashboard.order;
+            document.getElementById('filterReceiver').value = filterValues.dashboard.receiver;
+            document.getElementById('filterCourier').value = filterValues.dashboard.courier;
+            document.getElementById('filterStatus').value = filterValues.dashboard.status;
+
+            document.getElementById('filterOrderHistory').value = filterValues.history.order;
+            document.getElementById('filterReceiverHistory').value = filterValues.history.receiver;
+            document.getElementById('filterCourierHistory').value = filterValues.history.courier;
+            document.getElementById('filterStatusHistory').value = filterValues.history.status;
+
+            document.getElementById('filterOrderData').value = filterValues.data.order;
+            document.getElementById('filterReceiverData').value = filterValues.data.receiver;
+            document.getElementById('filterCourierData').value = filterValues.data.courier;
+            document.getElementById('filterStatusData').value = filterValues.data.status;
+            document.getElementById('filterStartDate').value = filterValues.data.startDate;
+            document.getElementById('filterEndDate').value = filterValues.data.endDate;
+            document.getElementById('filterByUploadDateCheckbox').checked = filterValues.data.filterByUploadDate;
+            document.getElementById('filterByCollectionDateCheckbox').checked = filterValues.data.filterByCollectionDate;
+
+            document.getElementById('filterOrderProblematic').value = filterValues.problematic.order;
+            document.getElementById('filterReceiverProblematic').value = filterValues.problematic.receiver;
+            document.getElementById('filterCourierProblematic').value = filterValues.problematic.courier;
+
+            updateAddressColumnVisibility(); // Call after loading filter values
         });
         toggleAddressCheckboxDashboard.addEventListener('change', updateAddressColumnVisibility);
         toggleAddressCheckboxHistory.addEventListener('change', updateAddressColumnVisibility);
@@ -1355,9 +1445,11 @@
                         if (item.comment && typeof item.comment === 'string') {
                             // Convert old string comments to new object format
                             item.comment = { text: item.comment, timestamp: Date.now() }; 
-                        } else if (item.comment && !item.comment.timestamp) {
+                        } else if (item.comment && item.comment.text && !item.comment.timestamp) {
                             // If it's an object but missing timestamp, add it (e.g., from initial dummy data)
                             item.comment.timestamp = Date.now();
+                        } else if (!item.comment) {
+                            item.comment = null; // Ensure it's explicitly null if not set
                         }
                     });
                 } else {
@@ -1388,6 +1480,7 @@
         function saveLocalData() {
             try {
                 localStorage.setItem('orderData', JSON.stringify(data));
+                localStorage.setItem('filterValues', JSON.stringify(filterValues)); // Save filter values
             } catch (e) {
                 console.error("Error saving local data:", e);
                 showNotification('შეცდომა ლოკალური მონაცემების შენახვისას.', 'error');
@@ -1447,13 +1540,14 @@
                         existingItem.courier = String(row['კურიერი'] || row['Courier'] || '').trim();
                         existingItem.type = String(row['ტემპი'] || row['Type'] || '').trim();
                         // Status, statusChangedDate, comment are NOT updated here to preserve manual changes
-                        // uploadDate is also NOT updated if it already exists to preserve original upload time
                         if (existingItem.uploadDate === undefined || existingItem.uploadDate === null) {
                             existingItem.uploadDate = now; // Set uploadDate only if it's missing for old data
                         }
-                        // Ensure comment field exists and is in the correct format
-                        if (!existingItem.comment || typeof existingItem.comment === 'string') { // If it's null or old string format
-                            existingItem.comment = null; // Reset to null or keep old if conversion needed for legacy
+                        // Ensure comment field exists and is in the correct format, do not overwrite if exists
+                        if (existingItem.comment && typeof existingItem.comment === 'string') {
+                            existingItem.comment = { text: existingItem.comment, timestamp: now }; // Convert old string
+                        } else if (!existingItem.comment) {
+                            existingItem.comment = null; // Ensure null if not set
                         }
                         newOrUpdatedOrders.push(existingItem);
                     } else {
@@ -1498,7 +1592,7 @@
             courierSelects.forEach(selectId => {
                 const selectElement = document.getElementById(selectId);
                 if (selectElement) {
-                    const currentCourierFilter = selectElement.value; // Save current selection
+                    const currentCourierFilter = filterValues[selectId.replace('filterCourier', '').toLowerCase() || 'dashboard'].courier; // Get current value from filterValues
                     selectElement.innerHTML = '<option value="">ყველა კურიერი</option>';
                     couriers.forEach(courier => {
                         const option = document.createElement('option');
@@ -1514,7 +1608,7 @@
         // Helper function to format timestamp to 'DD.MM.YYYY HH:MM'
         function formatTimestamp(timestamp) {
             if (!timestamp) return '-';
-            const date = new Date(timestamp);
+            const date = new Date(Number(timestamp)); // Ensure timestamp is treated as a number
             const pad = (num) => num < 10 ? '0' + num : num;
             return `${pad(date.getDate())}.${pad(date.getMonth() + 1)}.${date.getFullYear()} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
         }
@@ -1542,7 +1636,7 @@
             const modalTimestamp = document.getElementById('commentModalTimestamp');
 
             modalText.textContent = commentText || 'კომენტარი არ არის';
-            if (commentTimestamp) {
+            if (commentTimestamp && commentTimestamp !== 'undefined') { // Check for 'undefined' string too
                 modalTimestamp.textContent = `(${formatTimestamp(commentTimestamp)})`;
             } else {
                 modalTimestamp.textContent = '';
@@ -1559,7 +1653,7 @@
 
         function renderTable() {
             let tbodyId, headerId, colspan, addressColumnVisible;
-            let tableData = filteredData; // Default to filteredData
+            let tableData = filteredData; 
 
             // Determine which table and settings to use based on currentView
             switch (currentView) {
@@ -1584,7 +1678,7 @@
                 case 'problematic':
                     tbodyId = 'tableBodyProblematic';
                     headerId = 'tableHeaderProblematic';
-                    colspan = 8; /* Increased colspan for comment column */
+                    colspan = 8; 
                     addressColumnVisible = showAddressColumnProblematic;
                     break;
             }
@@ -1652,13 +1746,46 @@
                         statusClass = '';
                 }
                 
-                // Pass comment text and timestamp to showCommentModal
-                const commentData = item.comment ? `'${item.comment.text.replace(/'/g, "\\'")}', '${item.comment.timestamp}'` : `'', ''`;
-                const statusCell = `<span class="status-badge ${statusClass}" onclick="toggleStatus('${item.id}', '${item.status}')">${item.status}</span>`;
+                // Status cell content based on view and status
+                let statusCellContent;
+                if (currentView === 'dashboard' && item.status === 'ასაგროვებელი') {
+                    statusCellContent = `
+                        <select onchange="handleStatusChangeDropdown(this, '${item.id}', '${item.status}')" class="status-dropdown ${statusClass}">
+                            <option value="ასაგროვებელი" ${item.status === 'ასაგროვებელი' ? 'selected' : ''}>ასაგროვებელი</option>
+                            <option value="აგროვებული" ${item.status === 'აგროვებული' ? 'selected' : ''}>აგროვებული</option>
+                            <option value="პრობლემური" ${item.status === 'პრობლემური' ? 'selected' : ''}>პრობლემური</option>
+                        </select>
+                    `;
+                } else if (currentView === 'problematic' && item.status === 'პრობლემური') {
+                     statusCellContent = `
+                        <select onchange="handleStatusChangeDropdown(this, '${item.id}', '${item.status}')" class="status-dropdown ${statusClass}">
+                            <option value="პრობლემური" ${item.status === 'პრობლემური' ? 'selected' : ''}>პრობლემური</option>
+                            <option value="ასაგროვებელი" ${item.status === 'ასაგროვებელი' ? 'selected' : ''}>ასაგროვებელი</option>
+                            <option value="აგროვებული" ${item.status === 'აგროვებული' ? 'selected' : ''}>აგროვებული</option>
+                        </select>
+                    `;
+                } else {
+                    // Default for history, data, or items not eligible for dropdown (e.g., collected on dashboard)
+                    statusCellContent = `<span class="status-badge ${statusClass}">${item.status}</span>`;
+                }
+
+
                 const addressCellClass = addressColumnVisible ? '' : 'address-column-data';
                 const addressCellContent = `<td class="${addressCellClass}">${item.address || ''}</td>`;
 
                 let rowHtml = ``;
+
+                // For comment icon, pass both text and timestamp
+                const commentTextForModal = item.comment && item.comment.text ? item.comment.text.replace(/'/g, "\\'") : '';
+                const commentTimestampForModal = item.comment && item.comment.timestamp ? item.comment.timestamp : '';
+                const commentIcon = (item.comment && item.comment.text && (currentView === 'dashboard' || currentView === 'problematic' || currentView === 'data' || currentView === 'history')) 
+                    ? `<span class="material-icons comment-icon" onclick="showCommentModal('${commentTextForModal}', '${commentTimestampForModal}')">chat_bubble_outline</span>` : '';
+                
+                let commentColumnContent = '';
+                if (currentView === 'problematic') {
+                    commentColumnContent = `<td>${item.comment && item.comment.text ? `<span class="material-icons comment-icon" onclick="showCommentModal('${commentTextForModal}', '${commentTimestampForModal}')">chat_bubble_outline</span>` : '-'}</td>`;
+                }
+
 
                 if (currentView === 'dashboard' || currentView === 'history' || currentView === 'problematic') {
                     const extraDateColumn = (currentView === 'history' && item.statusChangedDate) 
@@ -1667,15 +1794,6 @@
                         ? `<td class="date-column">${formatTimestamp(item.uploadDate)}</td>`
                         : (currentView === 'history' || currentView === 'problematic') ? '<td class="date-column">-</td>' : '';
                     
-                    // Conditionally show comment icon based on if comment exists
-                    const commentIcon = (item.comment && item.comment.text && (currentView === 'dashboard' || currentView === 'problematic')) 
-                        ? `<span class="material-icons comment-icon" onclick="showCommentModal(${commentData})">chat_bubble_outline</span>` : '';
-                    
-                    let commentColumn = '';
-                    if (currentView === 'problematic') {
-                        commentColumn = `<td>${item.comment && item.comment.text ? `<span class="material-icons comment-icon" onclick="showCommentModal(${commentData})">chat_bubble_outline</span>` : '-'}</td>`;
-                    }
-
                     rowHtml = `
                         <tr>
                             <td>${item.order}</td>
@@ -1683,9 +1801,9 @@
                             ${addressCellContent} 
                             <td>${item.courier}</td>
                             <td>${item.type}</td>
-                            <td>${statusCell} ${commentIcon}</td>
+                            <td>${statusCellContent} ${commentIcon}</td>
                             ${extraDateColumn}
-                            ${commentColumn}
+                            ${commentColumnContent}
                         </tr>
                     `;
                 } else if (currentView === 'data') {
@@ -1698,7 +1816,7 @@
                             ${addressCellContent}
                             <td>${item.courier}</td>
                             <td>${item.type}</td>
-                            <td>${statusCell}</td>
+                            <td>${statusCellContent} ${commentIcon}</td>
                         </tr>
                     `;
                 }
@@ -1706,78 +1824,72 @@
             }).join('');
         }
 
-        // Modified toggleStatus to work with local data and new 'problematic' status
-        function toggleStatus(id, currentStatus) {
+        // New function to handle status changes via dropdown
+        function handleStatusChangeDropdown(selectElement, id, oldStatus) {
+            const newStatus = selectElement.value;
+
+            if (newStatus === oldStatus) {
+                return; // No change, do nothing
+            }
+
             let confirmationMessage = '';
-            let newStatus;
             let commentText = null;
 
-            if (currentStatus === 'ასაგროვებელი') {
-                newStatus = 'აგროვებული';
-                confirmationMessage = 'ნამდვილად გსურთ სტატუსის "ასაგროვებელი"-დან "აგროვებული"-ზე შეცვლა?';
-            } else if (currentStatus === 'აგროვებული') {
-                newStatus = 'ასაგროვებელი';
-                confirmationMessage = 'ნამდვილად გსურთ სტატუსის "აგროვებული"-დან "ასაგროვებელი"-ზე შეცვლა?';
-            } else if (currentStatus === 'პრობლემური') {
-                // If it's problematic, we assume they want to reset it to 'ასაგროვებელი'
-                newStatus = 'ასაგროვებელი';
-                confirmationMessage = 'ნამდვილად გსურთ სტატუსის "პრობლემური"-დან "ასაგროვებელი"-ზე შეცვლა?';
-            } else {
-                // Fallback or unexpected status
-                return;
-            }
-
-            if (!confirm(confirmationMessage)) {
-                return; // User cancelled the action
-            }
-
-            // Prompt for comment if switching TO problematic status from anywhere
             if (newStatus === 'პრობლემური') {
                 commentText = prompt('გთხოვთ, შეიყვანოთ კომენტარი პრობლემური შეკვეთისთვის:');
                 if (commentText === null) { // User cancelled the comment prompt
+                    selectElement.value = oldStatus; // Revert dropdown
                     return; 
                 }
+                confirmationMessage = `ნამდვილად გსურთ სტატუსის "${oldStatus}"-დან "პრობლემური"-ზე შეცვლა?`;
+            } else if (oldStatus === 'ასაგროვებელი' && newStatus === 'აგროვებული') {
+                // No confirmation needed as per user's point 1
+                confirmationMessage = null; // No confirmation popup
+            } else {
+                confirmationMessage = `ნამდვილად გსურთ სტატუსის "${oldStatus}"-დან "${newStatus}"-ზე შეცვლა?`;
             }
 
+            if (confirmationMessage && !confirm(confirmationMessage)) {
+                selectElement.value = oldStatus; // Revert dropdown
+                return; // User cancelled the action
+            }
+
+            // Find the item and update it
             const itemIndex = data.findIndex(item => item.id === id);
             if (itemIndex > -1) {
                 updateSyncIndicator('syncing', 'ლოკალური მონაცემების განახლება...');
                 const item = data[itemIndex];
-                const oldStatus = item.status;
                 
                 let newStatusChangedDate = item.statusChangedDate;
+                const now = Date.now();
 
-                if (oldStatus !== newStatus) {
-                    const now = Date.now();
-                    // Set statusChangedDate only if it becomes 'აგროვებული'
-                    if (newStatus === 'აგროვებული') {
-                        newStatusChangedDate = now;
-                    } else if (newStatus === 'ასაგროვებელი' || newStatus === 'პრობლემური') {
-                        newStatusChangedDate = null; // Clear if not collected
-                    }
-                }
-                
-                // Update the local item
+                // Update status and statusChangedDate
                 item.status = newStatus;
+                if (newStatus === 'აგროვებული') {
+                    newStatusChangedDate = now;
+                } else {
+                    newStatusChangedDate = null; // Clear if not collected
+                }
                 item.statusChangedDate = newStatusChangedDate;
-                
-                // Only update comment if new status is 'პრობლემური' and comment was provided
+
+                // Update comment
                 if (newStatus === 'პრობლემური' && commentText !== null) {
-                    item.comment = { text: commentText, timestamp: Date.now() }; // Store comment with timestamp
+                    item.comment = { text: commentText, timestamp: now }; // Store comment with timestamp
                 } else if (oldStatus === 'პრობლემური' && newStatus !== 'პრობლემური') {
                     item.comment = null; // Clear comment if moving away from problematic
                 }
 
 
-                saveLocalData(); // Save updated data to local storage
-                applyFilters(); // Re-apply filters to update table
-                updateStats(); // Update stats
+                saveLocalData();
+                applyFilters(); // Re-apply filters to move the item to the correct view
+                updateStats();
                 updateSyncIndicator('', 'ლოკალური მონაცემები განახლდა');
                 showNotification('სტატუსი განახლდა ლოკალურად.');
             } else {
                 showNotification('მონაცემები ვერ მოიძებნა ლოკალურად.', 'error');
             }
         }
+
 
         // Function to hide all view containers and then show the selected one
         function switchView(view) {
@@ -1845,44 +1957,34 @@
 
         // Unified applyFilters function for all views
         function applyFilters() {
-            let currentFilterOrder, currentFilterReceiver, currentFilterCourier, currentFilterStatus;
-            let filterStartDate, filterEndDate;
-            let filterByUploadDate, filterByCollectionDate;
+            // Update filterValues object from current input states
+            filterValues.dashboard.order = document.getElementById('filterOrder').value.toLowerCase().trim();
+            filterValues.dashboard.receiver = document.getElementById('filterReceiver').value.toLowerCase().trim();
+            filterValues.dashboard.courier = document.getElementById('filterCourier').value;
+            filterValues.dashboard.status = document.getElementById('filterStatus').value;
 
-            // Get filter values based on current view
-            switch (currentView) {
-                case 'dashboard':
-                    currentFilterOrder = document.getElementById('filterOrder').value.toLowerCase().trim();
-                    currentFilterReceiver = document.getElementById('filterReceiver').value.toLowerCase().trim();
-                    currentFilterCourier = document.getElementById('filterCourier').value;
-                    currentFilterStatus = document.getElementById('filterStatus').value;
-                    break;
-                case 'history':
-                    currentFilterOrder = document.getElementById('filterOrderHistory').value.toLowerCase().trim();
-                    currentFilterReceiver = document.getElementById('filterReceiverHistory').value.toLowerCase().trim();
-                    currentFilterCourier = document.getElementById('filterCourierHistory').value;
-                    currentFilterStatus = document.getElementById('filterStatusHistory').value;
-                    break;
-                case 'data':
-                    currentFilterOrder = document.getElementById('filterOrderData').value.toLowerCase().trim();
-                    currentFilterReceiver = document.getElementById('filterReceiverData').value.toLowerCase().trim();
-                    currentFilterCourier = document.getElementById('filterCourierData').value;
-                    currentFilterStatus = document.getElementById('filterStatusData').value;
-                    
-                    filterStartDate = dateToStartOfDayTimestamp(document.getElementById('filterStartDate').value);
-                    filterEndDate = dateToEndOfDayTimestamp(document.getElementById('filterEndDate').value);
-                    filterByUploadDate = document.getElementById('filterByUploadDateCheckbox').checked;
-                    filterByCollectionDate = document.getElementById('filterByCollectionDateCheckbox').checked;
-                    break;
-                case 'problematic':
-                    currentFilterOrder = document.getElementById('filterOrderProblematic').value.toLowerCase().trim();
-                    currentFilterReceiver = document.getElementById('filterReceiverProblematic').value.toLowerCase().trim();
-                    currentFilterCourier = document.getElementById('filterCourierProblematic').value;
-                    currentFilterStatus = 'პრობლემური'; // Implicitly problematic for this view
-                    break;
-            }
+            filterValues.history.order = document.getElementById('filterOrderHistory').value.toLowerCase().trim();
+            filterValues.history.receiver = document.getElementById('filterReceiverHistory').value.toLowerCase().trim();
+            filterValues.history.courier = document.getElementById('filterCourierHistory').value;
+            filterValues.history.status = document.getElementById('filterStatusHistory').value;
 
+            filterValues.data.order = document.getElementById('filterOrderData').value.toLowerCase().trim();
+            filterValues.data.receiver = document.getElementById('filterReceiverData').value.toLowerCase().trim();
+            filterValues.data.courier = document.getElementById('filterCourierData').value;
+            filterValues.data.status = document.getElementById('filterStatusData').value;
+            filterValues.data.startDate = document.getElementById('filterStartDate').value;
+            filterValues.data.endDate = document.getElementById('filterEndDate').value;
+            filterValues.data.filterByUploadDate = document.getElementById('filterByUploadDateCheckbox').checked;
+            filterValues.data.filterByCollectionDate = document.getElementById('filterByCollectionDateCheckbox').checked;
 
+            filterValues.problematic.order = document.getElementById('filterOrderProblematic').value.toLowerCase().trim();
+            filterValues.problematic.receiver = document.getElementById('filterReceiverProblematic').value.toLowerCase().trim();
+            filterValues.problematic.courier = document.getElementById('filterCourierProblematic').value;
+
+            // Save current filters to localStorage
+            saveLocalData();
+
+            let currentFilter = filterValues[currentView];
             let dataToFilter = [...data];
             
             // Initial view-specific filtering
@@ -1902,27 +2004,30 @@
 
             // Apply common filters
             filteredData = dataToFilter.filter(item => {
-                const orderMatch = !currentFilterOrder || String(item.order).toLowerCase().includes(currentFilterOrder);
-                const receiverMatch = !currentFilterReceiver || String(item.receiver).toLowerCase().includes(currentFilterReceiver);
-                const courierMatch = !currentFilterCourier || item.courier === currentFilterCourier;
-                const statusMatch = !currentFilterStatus || item.status === currentFilterStatus;
-
+                const orderMatch = !currentFilter.order || String(item.order).toLowerCase().includes(currentFilter.order);
+                const receiverMatch = !currentFilter.receiver || String(item.receiver).toLowerCase().includes(currentFilter.receiver);
+                const courierMatch = !currentFilter.courier || item.courier === currentFilter.courier;
+                const statusMatch = (currentView === 'data' || currentView === 'history' || currentView === 'dashboard') ? (!currentFilter.status || item.status === currentFilter.status) : true;
+                
                 let dateRangeMatch = true;
 
-                if (currentView === 'data' && (filterStartDate || filterEndDate)) {
+                if (currentView === 'data' && (currentFilter.startDate || currentFilter.endDate)) {
                     let itemDate = null;
-                    if (filterByUploadDate && item.uploadDate) {
+                    if (currentFilter.filterByUploadDate && item.uploadDate) {
                         itemDate = item.uploadDate;
-                    } else if (filterByCollectionDate && item.statusChangedDate) {
+                    } else if (currentFilter.filterByCollectionDate && item.statusChangedDate) {
                         itemDate = item.statusChangedDate;
                     }
 
                     if (itemDate) {
-                        if (filterStartDate) {
-                            dateRangeMatch = dateRangeMatch && itemDate >= filterStartDate;
+                        const filterStartDateTs = dateToStartOfDayTimestamp(currentFilter.startDate);
+                        const filterEndDateTs = dateToEndOfDayTimestamp(currentFilter.endDate);
+
+                        if (filterStartDateTs) {
+                            dateRangeMatch = dateRangeMatch && itemDate >= filterStartDateTs;
                         }
-                        if (filterEndDate) {
-                            dateRangeMatch = dateRangeMatch && itemDate <= filterEndDate;
+                        if (filterEndDateTs) {
+                            dateRangeMatch = dateRangeMatch && itemDate <= filterEndDateTs;
                         }
                     } else {
                         dateRangeMatch = false; // If no relevant date for filtering, it doesn't match
@@ -2020,7 +2125,8 @@
             if (confirm('ნამდვილად გსურთ ყველა მონაცემის წაშლა? ეს ქმედება შეუქცევადია. ეს წაშლის მონაცემებს ლოკალურად!')) {
                 updateSyncIndicator('syncing', 'მონაცემების წაშლა...');
                 data = []; // Clear local data array
-                saveLocalData(); // Clear from local storage
+                localStorage.removeItem('orderData'); // Clear from local storage
+                localStorage.removeItem('filterValues'); // Clear filter values
                 document.getElementById('fileName').textContent = '';
                 populateCourierFilter();
                 applyFilters();
