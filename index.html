@@ -572,6 +572,15 @@
             font-weight: 700;
             color: var(--text-color);
         }
+        /* New style for problematic counter */
+        .stat-card .number.problematic-count {
+            color: var(--error-color); /* Red color for problematic count */
+            font-weight: 700; /* Bold */
+        }
+        body.dark-mode .stat-card .number.problematic-count {
+            color: var(--dark-error-color);
+        }
+
 
         /* Filters */
         .filters {
@@ -1034,6 +1043,10 @@
             <div class="stat-card">
                 <h4>აგროვებული</h4>
                 <div class="number" id="collectedOrders">0</div>
+            </div>
+            <div class="stat-card">
+                <h4>პრობლემური</h4>
+                <div class="number problematic-count" id="problematicOrders">0</div>
             </div>
             <div class="stat-card">
                 <h4>საშუალო აგროვების სიჩქარე (24სთ)</h4>
@@ -1992,10 +2005,12 @@
             const total = data.length;
             const toCollect = data.filter(item => item.status === 'ასაგროვებელი').length;
             const collected = data.filter(item => item.status === 'აგროვებული').length;
+            const problematic = data.filter(item => item.status === 'პრობლემური').length; // NEW: Problematic count
 
             document.getElementById('totalOrders').textContent = total;
             document.getElementById('toCollectOrders').textContent = toCollect;
             document.getElementById('collectedOrders').textContent = collected;
+            document.getElementById('problematicOrders').textContent = problematic; // NEW: Update problematic counter
 
             // Calculate Average Collection Speed (24-hour window)
             let totalCollectionTime = 0; 
