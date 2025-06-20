@@ -191,6 +191,25 @@
         body.dark-mode .comment-icon:hover {
             color: var(--dark-primary-dark-color);
         }
+
+        /* NEW: Overdue Icon Styling */
+        .overdue-icon {
+            color: var(--error-color); /* Red color */
+            font-size: 16px; /* Slightly smaller than main text but noticeable */
+            vertical-align: middle;
+            margin-left: 5px;
+            animation: pulse-red 1.5s infinite; /* Make it pulse to draw attention */
+        }
+        body.dark-mode .overdue-icon {
+            color: var(--dark-error-color);
+        }
+
+        @keyframes pulse-red {
+            0% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.1); opacity: 0.7; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
         /* Custom Modal Styles */
         .modal-overlay {
             position: fixed;
@@ -413,6 +432,7 @@
         @keyframes pulse {
             0%, 100% { opacity: 1; transform: scale(1); }
             50% { opacity: 0.6; transform: scale(0.8); }
+            100% { opacity: 1; transform: scale(1); }
         }
 
         .upload-section {
@@ -1049,6 +1069,14 @@
                 <div class="number problematic-count" id="problematicOrders">0</div>
             </div>
             <div class="stat-card">
+                <h4>2სთ-ზე მეტი დაყოვნება</h4>
+                <div class="number problematic-count" id="overdueOrders">0</div>
+            </div>
+            <div class="stat-card">
+                <h4>პრობლემურების წილი</h4>
+                <div class="number" id="problematicPercentage">0%</div>
+            </div>
+            <div class="stat-card">
                 <h4>საშუალო აგროვების სიჩქარე (24სთ)</h4>
                 <div class="number" id="avgCollectionSpeed">N/A</div>
             </div>
@@ -1100,7 +1128,7 @@
                                 <th>შეკვეთა</th>
                                 <th>მიმღები</th>
                                 <th class="address-column-header">მისამართი</th> <th>კურიერი</th>
-                                <th>თარო</th>
+                                <th>ტემპი</th>
                                 <th>სტატუსი</th>
                             </tr>
                         </thead>
@@ -1163,7 +1191,7 @@
                                 <th>შეკვეთა</th>
                                 <th>მიმღები</th>
                                 <th class="address-column-header">მისამართი</th> <th>კურიერი</th>
-                                <th>თარო</th>
+                                <th>ტემპი</th>
                                 <th>სტატუსი</th>
                                 <th>შეცვლის თარიღი</th>
                             </tr>
@@ -1251,7 +1279,7 @@
                                 <th>აგროვების დრო</th>
                                 <th>მიმღები</th>
                                 <th class="address-column-header">მისამართი</th> <th>კურიერი</th>
-                                <th>თარო</th>
+                                <th>ტემპი</th>
                                 <th>სტატუსი</th>
                             </tr>
                         </thead>
@@ -1305,7 +1333,7 @@
                                 <th>შეკვეთა</th>
                                 <th>მიმღები</th>
                                 <th class="address-column-header">მისამართი</th> <th>კურიერი</th>
-                                <th>თარო</th>
+                                <th>ტემპი</th>
                                 <th>სტატუსი</th>
                                 <th>შემოსვლის თარიღი</th>
                                 <th>კომენტარი</th> <!-- NEW COLUMN -->
@@ -1452,18 +1480,7 @@
                 setDarkMode(false); 
             }
 
-            // Load saved visibility settings
-            showAddressColumnDashboard = (localStorage.getItem('showAddressColumnDashboard') !== 'false');
-            showAddressColumnHistory = (localStorage.getItem('showAddressColumnHistory') !== 'false');
-            showAddressColumnData = (localStorage.getItem('showAddressColumnData') !== 'false');
-            showAddressColumnProblematic = (localStorage.getItem('showAddressColumnProblematic') !== 'false');
-
-            toggleAddressCheckboxDashboard.checked = showAddressColumnDashboard;
-            toggleAddressCheckboxHistory.checked = showAddressColumnHistory;
-            toggleAddressCheckboxData.checked = showAddressColumnData;
-            toggleAddressCheckboxProblematic.checked = showAddressColumnProblematic;
-            
-            // Load saved filter values
+            // Load saved filter values first
             try {
                 const savedFilters = localStorage.getItem('filterValues');
                 if (savedFilters) {
@@ -1476,17 +1493,17 @@
             // Initialize filter inputs with loaded values
             document.getElementById('filterOrder').value = filterValues.dashboard.order;
             document.getElementById('filterReceiver').value = filterValues.dashboard.receiver;
-            document.getElementById('filterCourier').value = filterValues.dashboard.courier;
-            document.getElementById('filterStatus').value = filterValues.dashboard.status;
+            // filterCourier will be populated by switchView
 
             document.getElementById('filterOrderHistory').value = filterValues.history.order;
             document.getElementById('filterReceiverHistory').value = filterValues.history.receiver;
-            document.getElementById('filterCourierHistory').value = filterValues.history.courier;
+            // filterCourierHistory will be populated by switchView
             document.getElementById('filterStatusHistory').value = filterValues.history.status;
+
 
             document.getElementById('filterOrderData').value = filterValues.data.order;
             document.getElementById('filterReceiverData').value = filterValues.data.receiver;
-            document.getElementById('filterCourierData').value = filterValues.data.courier;
+            // filterCourierData will be populated by switchView
             document.getElementById('filterStatusData').value = filterValues.data.status;
             document.getElementById('filterStartDate').value = filterValues.data.startDate;
             document.getElementById('filterEndDate').value = filterValues.data.endDate;
@@ -1495,9 +1512,13 @@
 
             document.getElementById('filterOrderProblematic').value = filterValues.problematic.order;
             document.getElementById('filterReceiverProblematic').value = filterValues.problematic.receiver;
-            document.getElementById('filterCourierProblematic').value = filterValues.problematic.courier;
+            // filterCourierProblematic will be populated by switchView
 
-            updateAddressColumnVisibility(); // Call after loading filter values
+
+            const savedView = localStorage.getItem('currentView');
+            switchView(savedView || 'dashboard'); // This call will also populate relevant courier filters and apply initial filters.
+
+            updateAddressColumnVisibility(); // Call after switchView ensures table is rendered
         });
         toggleAddressCheckboxDashboard.addEventListener('change', updateAddressColumnVisibility);
         toggleAddressCheckboxHistory.addEventListener('change', updateAddressColumnVisibility);
@@ -1509,6 +1530,37 @@
         window.addEventListener('load', function() {
             loadFirebaseData(); 
         });
+
+        /**
+         * Populates the courier filter dropdown with unique courier names from the provided data subset.
+         * @param {string} selectElementId - The ID of the <select> element to populate.
+         * @param {Array<Object>} sourceArray - The array of data objects to extract courier names from.
+         */
+        function populateCourierFilter(selectElementId, sourceArray) {
+            const selectElement = document.getElementById(selectElementId);
+            if (!selectElement) return;
+
+            // Extract unique courier names, filter out empty/null, and sort alphabetically
+            const couriers = [...new Set(sourceArray.map(item => item.courier))].filter(Boolean).sort();
+            const currentSelection = selectElement.value; // Save current selection
+
+            selectElement.innerHTML = '<option value="">ყველა კურიერი</option>'; // Clear existing options
+
+            // Add new options
+            couriers.forEach(courier => {
+                const option = document.createElement('option');
+                option.value = courier;
+                option.textContent = courier;
+                selectElement.appendChild(option);
+            });
+
+            // Restore previous selection if it's still a valid option
+            if (couriers.includes(currentSelection)) {
+                selectElement.value = currentSelection;
+            } else {
+                selectElement.value = ''; // Reset if invalid
+            }
+        }
 
         // Function to load data from Firebase
         function loadFirebaseData() {
@@ -1536,7 +1588,13 @@
                             }
                         }
                     }
-                    populateCourierFilter();
+                    
+                    // Populate all courier filters based on relevant data
+                    populateCourierFilter('filterCourier', data.filter(item => item.status === 'ასაგროვებელი'));
+                    populateCourierFilter('filterCourierHistory', data.filter(item => item.status === 'აგროვებული'));
+                    populateCourierFilter('filterCourierData', data); // All data for the 'Data' view
+                    populateCourierFilter('filterCourierProblematic', data.filter(item => item.status === 'პრობლემური')); // Only problematic for 'Problematic' view
+
                     applyFilters();
                     updateStats();
                     updateSyncIndicator('', 'სინქრონიზებული Firebase-თან');
@@ -1552,7 +1610,7 @@
             });
         }
 
-        // Function to save data to Firebase
+        // Function to save data to Firebase (implicitly handled by individual updates)
         function saveFirebaseData() {
             // This function is implicitly called by individual updates or bulk operations.
             // The on('value') listener will handle updating the local 'data' array.
@@ -1610,7 +1668,7 @@
                         itemToUpdate.receiver = String(row['მიმღები'] || row['Receiver'] || '').trim();
                         itemToUpdate.address = String(row['მისამართი'] || row['Address'] || '').trim();
                         itemToUpdate.courier = String(row['კურიერი'] || row['Courier'] || '').trim();
-                        itemToUpdate.type = String(row['თარო'] || row['Type'] || '').trim();
+                        itemToUpdate.type = String(row['ტემპი'] || row['Type'] || '').trim();
                         
                         // Only set uploadDate if it's missing (for older data structure or new data)
                         if (itemToUpdate.uploadDate === undefined || itemToUpdate.uploadDate === null) {
@@ -1625,7 +1683,7 @@
                             receiver: String(row['მიმღები'] || row['Receiver'] || '').trim(),
                             address: String(row['მისამართი'] || row['Address'] || '').trim(), 
                             courier: String(row['კურიერი'] || row['Courier'] || '').trim(),
-                            type: String(row['თარო'] || row['Type'] || '').trim(),
+                            type: String(row['ტემპი'] || row['Type'] || '').trim(),
                             status: 'ასაგროვებელი', // Default status for new orders
                             statusChangedDate: null,
                             uploadDate: now, // Set upload date for new orders
@@ -1647,34 +1705,6 @@
                     updateSyncIndicator('error', 'Firebase განახლების შეცდომა');
                     showNotification('Firebase-ზე მონაცემების განახლება ვერ მოხერხდა.', 'error');
                 });
-        }
-
-        // Populates courier filter for all views
-        function populateCourierFilter() {
-            const couriers = [...new Set(data.map(item => item.courier))].filter(Boolean).sort();
-            const courierSelects = ['filterCourier', 'filterCourierHistory', 'filterCourierData', 'filterCourierProblematic'];
-            
-            courierSelects.forEach(selectId => {
-                const selectElement = document.getElementById(selectId);
-                if (selectElement) {
-                    const currentViewKey = selectId.replace('filterCourier', '').toLowerCase() || 'dashboard';
-                    // Save current selection before clearing options
-                    const currentSelection = selectElement.value;
-                    selectElement.innerHTML = '<option value="">ყველა კურიერი</option>';
-                    couriers.forEach(courier => {
-                        const option = document.createElement('option');
-                        option.value = courier;
-                        option.textContent = courier;
-                        selectElement.appendChild(option);
-                    });
-                    // Restore previous selection if it's still a valid option
-                    if (couriers.includes(currentSelection)) {
-                        selectElement.value = currentSelection;
-                    } else {
-                        selectElement.value = ''; // Reset if invalid
-                    }
-                }
-            });
         }
 
         // Helper function to format timestamp to 'DD.MM.YYYY HH:MM'
@@ -1764,7 +1794,7 @@
                     <th>მიმღები</th>
                     <th class="${addressColumnVisible ? '' : 'address-column-header'}">მისამართი</th> 
                     <th>კურიერი</th>
-                    <th>თარო</th>
+                    <th>ტემპი</th>
                     <th>სტატუსი</th>
                 `;
                 if (currentView === 'history') {
@@ -1780,7 +1810,7 @@
                     <th>მიმღები</th>
                     <th class="${addressColumnVisible ? '' : 'address-column-header'}">მისამართი</th> 
                     <th>კურიერი</th>
-                    <th>თარო</th>
+                    <th>ტემპი</th>
                     <th>სტატუსი</th>
                 `;
             }
@@ -1859,6 +1889,12 @@
                     commentColumnContent = `<td>${item.comment && item.comment.text ? `<span class="material-icons comment-icon" onclick="showCommentModal('${commentTextForModal}', '${commentTimestampForModal}')">chat_bubble_outline</span>` : '-'}</td>`;
                 }
 
+                // NEW: Overdue icon logic for the table
+                const now = Date.now(); 
+                const twoHours = 2 * 60 * 60 * 1000; 
+                const isOverdueInTable = (item.status === 'ასაგროვებელი' && item.uploadDate && (now - item.uploadDate) > twoHours);
+                const overdueIconHtml = isOverdueInTable ? '<span class="material-icons overdue-icon" title="2 საათზე მეტია დაყოვნებული">alarm</span>' : '';
+
 
                 if (currentView === 'dashboard' || currentView === 'history' || currentView === 'problematic') {
                     const extraDateColumn = (currentView === 'history' && item.statusChangedDate) 
@@ -1869,7 +1905,7 @@
                     
                     rowHtml = `
                         <tr>
-                            <td>${item.order}</td>
+                            <td>${item.order} ${overdueIconHtml}</td>
                             <td>${item.receiver}</td>
                             ${addressCellContent} 
                             <td>${item.courier}</td>
@@ -1973,9 +2009,16 @@
         }
 
 
-        // Function to hide all view containers and then show the selected one
+        /**
+         * Switches the active view and updates the UI accordingly.
+         * Persists the current view to localStorage to prevent resets on orientation change.
+         * @param {string} view - The ID of the view to switch to ('dashboard', 'history', 'data', 'problematic').
+         */
         function switchView(view) {
             currentView = view;
+            localStorage.setItem('currentView', view); // Save current view to localStorage
+
+            // Deactivate all view buttons and hide all view containers
             document.querySelectorAll('.view-btn').forEach(btn => btn.classList.remove('active'));
             document.querySelector(`.view-toggle .view-btn[onclick="switchView('${view}')"]`).classList.add('active');
 
@@ -1984,33 +2027,54 @@
             dataViewContainer.style.display = 'none';
             problematicViewContainer.style.display = 'none';
 
+            // Show the selected view and populate its specific courier filter
             switch(view) {
                 case 'dashboard':
                     dashboardViewContainer.style.display = 'block';
+                    populateCourierFilter('filterCourier', data.filter(item => item.status === 'ასაგროვებელი'));
                     break;
                 case 'history':
                     historyViewContainer.style.display = 'block';
+                    populateCourierFilter('filterCourierHistory', data.filter(item => item.status === 'აგროვებული'));
                     break;
                 case 'data':
                     dataViewContainer.style.display = 'block';
+                    populateCourierFilter('filterCourierData', data); 
                     break;
                 case 'problematic':
                     problematicViewContainer.style.display = 'block';
+                    populateCourierFilter('filterCourierProblematic', data.filter(item => item.status === 'პრობლემური'));
                     break;
             }
-            applyFilters();
+            applyFilters(); // Re-apply filters for the new view
         }
 
         function updateStats() {
             const total = data.length;
             const toCollect = data.filter(item => item.status === 'ასაგროვებელი').length;
             const collected = data.filter(item => item.status === 'აგროვებული').length;
-            const problematic = data.filter(item => item.status === 'პრობლემური').length; // NEW: Problematic count
+            const problematic = data.filter(item => item.status === 'პრობლემური').length; 
 
             document.getElementById('totalOrders').textContent = total;
             document.getElementById('toCollectOrders').textContent = toCollect;
             document.getElementById('collectedOrders').textContent = collected;
-            document.getElementById('problematicOrders').textContent = problematic; // NEW: Update problematic counter
+            document.getElementById('problematicOrders').textContent = problematic; 
+
+            // Calculate Overdue Orders (asagrovebeli status and older than 2 hours)
+            const now = Date.now();
+            const twoHours = 2 * 60 * 60 * 1000; 
+            const overdue = data.filter(item => 
+                item.status === 'ასაგროვებელი' && item.uploadDate && (now - item.uploadDate) > twoHours
+            ).length;
+            document.getElementById('overdueOrders').textContent = overdue;
+
+
+            // Calculate Problematic Percentage
+            let problematicPercentage = '0%';
+            if (total > 0) {
+                problematicPercentage = ((problematic / total) * 100).toFixed(1) + '%';
+            }
+            document.getElementById('problematicPercentage').textContent = problematicPercentage;
 
             // Calculate Average Collection Speed (24-hour window)
             let totalCollectionTime = 0; 
@@ -2019,9 +2083,9 @@
             data.forEach(item => {
                 if (item.status === 'აგროვებული' && item.uploadDate && item.statusChangedDate) {
                     const timeDiff = item.statusChangedDate - item.uploadDate; 
-                    const twentyFourHours = 24 * 60 * 60 * 1000;
+                    
 
-                    if (timeDiff >= 0 && timeDiff <= twentyFourHours) {
+                    if (timeDiff >= 0 && timeDiff <= (24 * 60 * 60 * 1000)) { // Still 24 hours for average speed
                         totalCollectionTime += timeDiff;
                         collectedCount24h++;
                     }
@@ -2206,7 +2270,12 @@
                         // Firebase listener will clear local 'data' and update UI
                         localStorage.removeItem('filterValues'); // Clear filter values too
                         document.getElementById('fileName').textContent = '';
-                        populateCourierFilter(); // Re-populate with empty data
+                        // Re-populate courier filters with empty data (or relevant subsets)
+                        populateCourierFilter('filterCourier', data.filter(item => item.status === 'ასაგროვებელი'));
+                        populateCourierFilter('filterCourierHistory', data.filter(item => item.status === 'აგროვებული'));
+                        populateCourierFilter('filterCourierData', data); 
+                        populateCourierFilter('filterCourierProblematic', data.filter(item => item.status === 'პრობლემური')); 
+
                         applyFilters(); // Re-apply filters with empty data
                         updateStats(); // Update stats to 0
                         updateSyncIndicator('', 'Firebase-ის მონაცემები წაშლილია!');
