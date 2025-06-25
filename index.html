@@ -414,11 +414,13 @@
         }
 
         .sync-indicator.syncing {
-            background-color: var(--warning-color); /* Syncing (Yellow) */
+            background-color: var(--warning-color);
+            color: var(--surface-color); /* Ensure text is visible */
         }
 
         .sync-indicator.error {
-            background-color: var(--error-color); /* Error (Red) */
+            background-color: var(--error-color);
+            color: var(--surface-color); /* Ensure text is visible */
         }
 
         .sync-dot {
@@ -1128,7 +1130,7 @@
                                 <th>შეკვეთა</th>
                                 <th>მიმღები</th>
                                 <th class="address-column-header">მისამართი</th> <th>კურიერი</th>
-                                <th>თარო</th>
+                                <th>ტემპი</th>
                                 <th>სტატუსი</th>
                             </tr>
                         </thead>
@@ -1191,7 +1193,7 @@
                                 <th>შეკვეთა</th>
                                 <th>მიმღები</th>
                                 <th class="address-column-header">მისამართი</th> <th>კურიერი</th>
-                                <th>თარო</th>
+                                <th>ტემპი</th>
                                 <th>სტატუსი</th>
                                 <th>შეცვლის თარიღი</th>
                             </tr>
@@ -1254,7 +1256,7 @@
                         <label for="filterStartDate">თარიღი - დაწყება</label>
                         <input type="date" id="filterStartDate">
                     </div>
-                    <div class="date-filter-group">
+                    <div class="filter-group">
                         <label for="filterEndDate">თარიღი - დასრულება</label>
                         <input type="date" id="filterEndDate">
                     </div>
@@ -1279,7 +1281,7 @@
                                 <th>აგროვების დრო</th>
                                 <th>მიმღები</th>
                                 <th class="address-column-header">მისამართი</th> <th>კურიერი</th>
-                                <th>თარო</th>
+                                <th>ტემპი</th>
                                 <th>სტატუსი</th>
                             </tr>
                         </thead>
@@ -1333,7 +1335,7 @@
                                 <th>შეკვეთა</th>
                                 <th>მიმღები</th>
                                 <th class="address-column-header">მისამართი</th> <th>კურიერი</th>
-                                <th>თარო</th>
+                                <th>ტემპი</th>
                                 <th>სტატუსი</th>
                                 <th>შემოსვლის თარიღი</th>
                                 <th>კომენტარი</th> <!-- NEW COLUMN -->
@@ -1648,55 +1650,105 @@
         function processAndUploadData(jsonData) {
             updateSyncIndicator('syncing', 'მონაცემების დამუშავება...');
             const updates = {}; // Object to hold all updates for Firebase
-            const existingOrdersMap = new Map(data.map(item => [item.order, item])); // Use current 'data' state
+            
+            // Map existing orders by their exact order number for quick lookup
+            const existingOrdersMap = new Map();
+            data.forEach(item => {
+                existingOrdersMap.set(item.order, item);
+            });
 
             jsonData.forEach((row) => {
                 const orderIdFromExcel = String(row['შეკვეთა'] || row['Order'] || '').trim();
                 
-                if (orderIdFromExcel) {
-                    const existingItem = existingOrdersMap.get(orderIdFromExcel);
-                    const now = Date.now();
-                    
-                    let itemToUpdate = {};
-                    let firebaseKey = '';
+                if (!orderIdFromExcel) return; // Skip empty order IDs
 
-                    if (existingItem) {
-                        // Update existing item values, but preserve existing status and comment
-                        itemToUpdate = { ...existingItem }; // Create a copy
-                        firebaseKey = existingItem.id;
+                const existingItem = existingOrdersMap.get(orderIdFromExcel);
+                const now = Date.now();
+                
+                let itemToCreateOrUpdate = {};
+                let firebaseKey = '';
+                let isSubOrderCreationTriggered = false;
 
-                        itemToUpdate.receiver = String(row['მიმღები'] || row['Receiver'] || '').trim();
-                        itemToUpdate.address = String(row['მისამართი'] || row['Address'] || '').trim();
-                        itemToUpdate.courier = String(row['კურიერი'] || row['Courier'] || '').trim();
-                        itemToUpdate.type = String(row['თარო'] || row['Type'] || '').trim();
-                        
-                        // Only set uploadDate if it's missing (for older data structure or new data)
-                        if (itemToUpdate.uploadDate === undefined || itemToUpdate.uploadDate === null) {
-                            itemToUpdate.uploadDate = now;
+                // Check if this Excel order ID, or its base, already exists in a "processed" state.
+                // Scan all current `data` to find if a base order exists and is processed.
+                // A "processed" order is one whose status is NOT 'ასაგროვებელი'.
+                const processedBaseOrderExists = data.some(item => 
+                    (item.order === orderIdFromExcel || item.order.startsWith(`${orderIdFromExcel}-`)) && 
+                    item.status !== 'ასაგროვებელი'
+                );
+                
+                // If the exact order ID from Excel exists AND its status is not 'ასაგროვებელი',
+                // OR if a processed sub-order of this base exists, trigger sub-order creation.
+                if ( (existingItem && existingItem.status !== 'ასაგროვებელი') || processedBaseOrderExists) {
+                    isSubOrderCreationTriggered = true;
+                }
+
+                if (isSubOrderCreationTriggered) {
+                    // This is a sub-order scenario. Generate a new sub-order ID.
+                    let baseOrderNumber = orderIdFromExcel; 
+
+                    // Find the highest existing suffix for this base order number (e.g., for 885522, look for 885522-1, 885522-2 etc.)
+                    let maxSuffix = 0;
+                    data.forEach(existingRecord => {
+                        const match = existingRecord.order.match(new RegExp(`^${baseOrderNumber}-(\\d+)$`));
+                        if (match) {
+                            maxSuffix = Math.max(maxSuffix, parseInt(match[1], 10));
                         }
-
+                    });
+                    
+                    const nextSuffix = maxSuffix + 1;
+                    const newOrderId = `${baseOrderNumber}-${nextSuffix}`;
+                    
+                    firebaseKey = ordersRef.push().key; // Get a unique Firebase push key for the new sub-order
+                    itemToCreateOrUpdate = {
+                        order: newOrderId, // Assign the new sub-order ID
+                        receiver: String(row['მიმღები'] || row['Receiver'] || '').trim(),
+                        address: String(row['მისამართი'] || row['Address'] || '').trim(), 
+                        courier: String(row['კურიერი'] || row['Courier'] || '').trim(),
+                        type: String(row['ტემპი'] || row['Type'] || '').trim(),
+                        status: 'ასაგროვებელი', // New sub-orders start as 'to collect'
+                        statusChangedDate: null,
+                        uploadDate: now, // Set upload date for new sub-orders
+                        comment: null 
+                    };
+                    updates[firebaseKey] = itemToCreateOrUpdate; // Add to batch update object
+                } else {
+                    // This is either a brand new order, or an update to an existing 'ასაგროვებელი' order.
+                    if (existingItem) {
+                        // Update existing 'ასაგროვებელი' order
+                        firebaseKey = existingItem.id;
+                        itemToCreateOrUpdate = { ...existingItem }; // Start with existing data
+                        // Update with new Excel data, preserve status/comment if not explicitly changing
+                        itemToCreateOrUpdate.receiver = String(row['მიმღები'] || row['Receiver'] || '').trim();
+                        itemToCreateOrUpdate.address = String(row['მისამართი'] || row['Address'] || '').trim();
+                        itemToCreateOrUpdate.courier = String(row['კურიერი'] || row['Courier'] || '').trim();
+                        itemToCreateOrUpdate.type = String(row['ტემპი'] || row['Type'] || '').trim();
+                        
+                        if (itemToCreateOrUpdate.uploadDate === undefined || itemToCreateOrUpdate.uploadDate === null) {
+                            itemToCreateOrUpdate.uploadDate = now;
+                        }
+                        updates[firebaseKey] = itemToCreateOrUpdate;
                     } else {
-                        // Add new item
-                        firebaseKey = ordersRef.push().key; // Get a unique Firebase push key
-                        itemToUpdate = {
+                        // Brand new order
+                        firebaseKey = ordersRef.push().key; 
+                        itemToCreateOrUpdate = {
                             order: orderIdFromExcel,
                             receiver: String(row['მიმღები'] || row['Receiver'] || '').trim(),
                             address: String(row['მისამართი'] || row['Address'] || '').trim(), 
                             courier: String(row['კურიერი'] || row['Courier'] || '').trim(),
-                            type: String(row['თარო'] || row['Type'] || '').trim(),
+                            type: String(row['ტემპი'] || row['Type'] || '').trim(),
                             status: 'ასაგროვებელი', // Default status for new orders
                             statusChangedDate: null,
-                            uploadDate: now, // Set upload date for new orders
-                            comment: null // New orders start without a comment
+                            uploadDate: now, 
+                            comment: null 
                         };
+                        updates[firebaseKey] = itemToCreateOrUpdate;
                     }
-                    updates[firebaseKey] = itemToUpdate; // Add to batch update object
                 }
             });
 
             ordersRef.update(updates)
                 .then(() => {
-                    // Data updated in Firebase, listener will handle local 'data' array update
                     updateSyncIndicator('', 'Firebase-ის მონაცემები განახლდა');
                     showNotification('მონაცემები წარმატებით განახლდა/დაემატა Firebase-ში.');
                 })
@@ -1794,7 +1846,7 @@
                     <th>მიმღები</th>
                     <th class="${addressColumnVisible ? '' : 'address-column-header'}">მისამართი</th> 
                     <th>კურიერი</th>
-                    <th>თარო</th>
+                    <th>ტემპი</th>
                     <th>სტატუსი</th>
                 `;
                 if (currentView === 'history') {
@@ -1810,7 +1862,7 @@
                     <th>მიმღები</th>
                     <th class="${addressColumnVisible ? '' : 'address-column-header'}">მისამართი</th> 
                     <th>კურიერი</th>
-                    <th>თარო</th>
+                    <th>ტემპი</th>
                     <th>სტატუსი</th>
                 `;
             }
@@ -1978,10 +2030,11 @@
                 item.status = newStatus;
                 const now = Date.now();
 
-                if (newStatus === 'აგროვებული') {
+                // Set statusChangedDate for 'collected' or 'problematic' status
+                if (newStatus === 'აგროვებული' || newStatus === 'პრობლემური') {
                     item.statusChangedDate = now;
-                } else {
-                    item.statusChangedDate = null; 
+                } else if (newStatus === 'ასაგროვებელი') { // If status reverts to asagrovebeli, clear the date
+                    item.statusChangedDate = null;
                 }
 
                 if (newStatus === 'პრობლემური' && commentText !== null) {
@@ -2145,11 +2198,12 @@
             } else if (currentView === 'history') {
                 dataToFilter = dataToFilter.filter(item => item.status === 'აგროვებული'); 
             } else if (currentView === 'problematic') {
+                // For problematic view, include actual problematic orders AND overdue asagrovebeli orders
                 const now = Date.now();
-                const twentyFourHours = 24 * 60 * 60 * 1000;
+                const twoHours = 2 * 60 * 60 * 1000;
                 dataToFilter = dataToFilter.filter(item => {
                     return item.status === 'პრობლემური' || 
-                           (item.status === 'ასაგროვებელი' && item.uploadDate && (now - item.uploadDate) > twentyFourHours);
+                           (item.status === 'ასაგროვებელი' && item.uploadDate && (now - item.uploadDate) > twoHours);
                 });
             }
 
@@ -2251,7 +2305,7 @@
         }
 
 
-        const ADMIN_CODE = "12345678";
+        const ADMIN_CODE = "321321";
         function promptForClearData() {
             const enteredCode = prompt('გთხოვთ, შეიყვანოთ ადმინისტრატორის კოდი მონაცემების წასაშლელად:');
             if (enteredCode === ADMIN_CODE) {
