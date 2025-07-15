@@ -1746,6 +1746,37 @@
             });
         }
 
+        /**
+         * Populates the courier filter dropdown with unique courier names from the provided data subset.
+         * @param {string} selectElementId - The ID of the <select> element to populate.
+         * @param {Array<Object>} sourceArray - The array of data objects to extract courier names from.
+         */
+        function populateCourierFilter(selectElementId, sourceArray) {
+            const selectElement = document.getElementById(selectElementId);
+            if (!selectElement) return;
+
+            // Extract unique courier names, filter out empty/null, and sort alphabetically
+            const couriers = [...new Set(sourceArray.map(item => item.courier))].filter(Boolean).sort();
+            const currentSelection = selectElement.value; // Save current selection
+
+            selectElement.innerHTML = '<option value="">ყველა კურიერი</option>'; // Clear existing options
+
+            // Add new options
+            couriers.forEach(courier => {
+                const option = document.createElement('option');
+                option.value = courier;
+                option.textContent = courier;
+                selectElement.appendChild(option);
+            });
+
+            // Restore previous selection if it's still a valid option
+            if (couriers.includes(currentSelection)) {
+                selectElement.value = currentSelection;
+            } else {
+                selectElement.value = ''; // Reset if invalid
+            }
+        }
+
 
         // Function to load data from Firebase
         function loadFirebaseData() {
@@ -2344,28 +2375,28 @@
         // Unified applyFilters function for all views
         function applyFilters() {
             // Update filterValues object from current input states
-            filterValues.dashboard.order = document.getElementById('filterOrder').value.toLowerCase().trim();
-            filterValues.dashboard.receiver = document.getElementById('filterReceiver').value.toLowerCase().trim();
-            filterValues.dashboard.courier = document.getElementById('filterCourier').value;
-            filterValues.dashboard.status = document.getElementById('filterStatus').value;
+            document.getElementById('filterOrder') && (filterValues.dashboard.order = document.getElementById('filterOrder').value.toLowerCase().trim());
+            document.getElementById('filterReceiver') && (filterValues.dashboard.receiver = document.getElementById('filterReceiver').value.toLowerCase().trim());
+            document.getElementById('filterCourier') && (filterValues.dashboard.courier = document.getElementById('filterCourier').value);
+            document.getElementById('filterStatus') && (filterValues.dashboard.status = document.getElementById('filterStatus').value);
 
-            filterValues.history.order = document.getElementById('filterOrderHistory').value.toLowerCase().trim();
-            filterValues.history.receiver = document.getElementById('filterReceiverHistory').value.toLowerCase().trim();
-            filterValues.history.courier = document.getElementById('filterCourierHistory').value;
-            filterValues.history.status = document.getElementById('filterStatusHistory').value;
+            document.getElementById('filterOrderHistory') && (filterValues.history.order = document.getElementById('filterOrderHistory').value.toLowerCase().trim());
+            document.getElementById('filterReceiverHistory') && (filterValues.history.receiver = document.getElementById('filterReceiverHistory').value.toLowerCase().trim());
+            document.getElementById('filterCourierHistory') && (filterValues.history.courier = document.getElementById('filterCourierHistory').value);
+            document.getElementById('filterStatusHistory') && (filterValues.history.status = document.getElementById('filterStatusHistory').value);
 
-            filterValues.data.order = document.getElementById('filterOrderData').value.toLowerCase().trim();
-            filterValues.data.receiver = document.getElementById('filterReceiverData').value.toLowerCase().trim();
-            filterValues.data.courier = document.getElementById('filterCourierData').value;
-            filterValues.data.status = document.getElementById('filterStatusData').value;
-            filterValues.data.startDate = document.getElementById('filterStartDate').value;
-            filterValues.data.endDate = document.getElementById('filterEndDate').value;
-            filterValues.data.filterByUploadDate = document.getElementById('filterByUploadDateCheckbox').checked;
-            filterValues.data.filterByCollectionDate = document.getElementById('filterByCollectionDateCheckbox').checked;
+            document.getElementById('filterOrderData') && (filterValues.data.order = document.getElementById('filterOrderData').value.toLowerCase().trim());
+            document.getElementById('filterReceiverData') && (filterValues.data.receiver = document.getElementById('filterReceiverData').value.toLowerCase().trim());
+            document.getElementById('filterCourierData') && (filterValues.data.courier = document.getElementById('filterCourierData').value);
+            document.getElementById('filterStatusData') && (filterValues.data.status = document.getElementById('filterStatusData').value);
+            document.getElementById('filterStartDate') && (filterValues.data.startDate = document.getElementById('filterStartDate').value);
+            document.getElementById('filterEndDate') && (filterValues.data.endDate = document.getElementById('filterEndDate').value);
+            document.getElementById('filterByUploadDateCheckbox') && (filterValues.data.filterByUploadDate = document.getElementById('filterByUploadDateCheckbox').checked);
+            document.getElementById('filterByCollectionDateCheckbox') && (filterValues.data.filterByCollectionDate = document.getElementById('filterByCollectionDateCheckbox').checked);
 
-            filterValues.problematic.order = document.getElementById('filterOrderProblematic').value.toLowerCase().trim();
-            filterValues.problematic.receiver = document.getElementById('filterReceiverProblematic').value.toLowerCase().trim();
-            filterValues.problematic.courier = document.getElementById('filterCourierProblematic').value;
+            document.getElementById('filterOrderProblematic') && (filterValues.problematic.order = document.getElementById('filterOrderProblematic').value.toLowerCase().trim());
+            document.getElementById('filterReceiverProblematic') && (filterValues.problematic.receiver = document.getElementById('filterReceiverProblematic').value.toLowerCase().trim());
+            document.getElementById('filterCourierProblematic') && (filterValues.problematic.courier = document.getElementById('filterCourierProblematic').value);
 
             // Save current filters to localStorage (only filters, not actual data)
             try {
